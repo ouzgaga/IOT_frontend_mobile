@@ -1,0 +1,3 @@
+rootProject.name = 'iotMobile'
+
+include ':app'
