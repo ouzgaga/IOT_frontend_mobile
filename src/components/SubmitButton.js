@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import Dimensions from 'Dimensions';
 import { StyleSheet,
         TouchableOpacity,
@@ -6,22 +7,19 @@ import { StyleSheet,
         View,
         Animated,
         Easing,
-        Image,
-        Alert } from 'react-native';
+        Image } from 'react-native';
 
 import spinner from '../images/loading.gif';
-import { Actions } from 'react-native-router-flux';
 
 const DEVICE_WIDTH = Dimensions.get('window').width;
-const DEVICE_HEIGHT = Dimensions.get('window').height;
 const MARGIN = 40;
 
-export default class LoginButtonSubmit extends Component {
-  constructor() {
-    super();
+export default class SubmitButton extends Component {
+  constructor(props) {
+    super(props);
 
     this.state = {
-      isLoading: false,
+      isLoading: false || this.props.isLoading,
     };
 
     this.buttonAnimated = new Animated.Value(0);
@@ -32,6 +30,8 @@ export default class LoginButtonSubmit extends Component {
   _onPress() {
     if (this.state.isLoading) return;
 
+    this.props.onPress();
+  
     // This is for the animation
     
     this.setState({ isLoading: true });
@@ -46,7 +46,6 @@ export default class LoginButtonSubmit extends Component {
     }, 2000);
 
     setTimeout(() => {
-      //Actions.secondScreen();
       this.setState({ isLoading: false });
       this.buttonAnimated.setValue(0);
       this.growAnimated.setValue(0);
@@ -55,10 +54,13 @@ export default class LoginButtonSubmit extends Component {
     // End of animation
   }
 
+  _onStartLoading() {
+
+  }
+
   _onGrow() {
     Animated.timing(this.growAnimated, {
       toValue: 1,
-      duration: 200,
       easing: Easing.linear,
     }).start();
   }
@@ -82,7 +84,7 @@ export default class LoginButtonSubmit extends Component {
             { this.state.isLoading ? (
               <Image source={spinner} style={styles.image} />
             ) : (
-              <Text style={styles.text}>Login</Text>
+              <Text style={styles.text}>{this.props.title}</Text>
             )}
           </TouchableOpacity>
           <Animated.View
@@ -94,11 +96,17 @@ export default class LoginButtonSubmit extends Component {
   }
 }
 
+SubmitButton.propTypes = {
+  title: PropTypes.string.isRequired,
+  onPress: PropTypes.func,
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'flex-start',
+    marginBottom: MARGIN/2,
   },
   button: {
     alignItems: 'center',

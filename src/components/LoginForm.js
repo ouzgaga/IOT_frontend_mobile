@@ -1,77 +1,139 @@
-import React, {Component} from 'react';
-import { StyleSheet,
-        KeyboardAvoidingView,
-        TouchableOpacity,
-        Image } from 'react-native';
+import React, { Component } from 'react';
+import { StyleSheet, Text, Alert,
+        KeyboardAvoidingView, View } from 'react-native';
+import Dimensions from 'Dimensions';
+import { Actions } from 'react-native-router-flux';
 
 import UserInput from './UserInput';
-import LoginButtonSubmit from '../components/LoginButtonSubmit';
+import SubmitButton from '../components/SubmitButton';
 
-import usernameImg from '../images/username.png';
+import emailImg from '../images/email.png';
 import passwordImg from '../images/password.png';
 import serverImg from '../images/server.png';
-import eyeImg from '../images/eye_black.png';
+import storageManager from '../utils/StorageManager';
+
+const defaultValue = {
+  server: "https://heig-iot-backend.herokuapp.com",
+  email: "admin@iot.com",
+  password: "mySuperPassword",
+}
 
 export default class LoginForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      showPass: true,
-      press: false,
+      serverAddr: defaultValue.server,
+      email: defaultValue.email,
+      password: defaultValue.password,
+      error: '',
+      isLoading: false,
     };
-    this.showPass = this.showPass.bind(this);
+    this.auth = this.auth.bind(this);
   }
 
-  showPass() {
-    this.state.press === false
-      ? this.setState({ showPass: false, press: true })
-      : this.setState({ showPass: true, press: false });
+  async auth() {
+    if (this.state.serverAddr === '' || this.state.email === '' || this.state.password === '') {
+      this.setState({ error: `At least one field is empty.` });
+    }
+    else {
+      this.setState({ isLoading: true });
+      try {
+        console.log(`${this.state.serverAddr}/accounts/authentication`);
+        const response = await fetch(`${this.state.serverAddr}/accounts/authentication`, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: this.state.email,
+            password: this.state.password,
+          }),
+        });
+        const responseJSON = await response.json();
+
+        if (response.status === 201) {
+          this.setState({ error: 'SUCCESS' });
+          storageManager.setToken(responseJSON.token);
+          Actions.homeScreen();
+        }
+        else {
+          if (responseJSON.status !== undefined && responseJSON.status !== '')
+            this.setState({ error: responseJSON.error });
+          else
+            this.setState({ error: 'An error occured. Maybe check the server URL ?' });
+        }
+      } catch(error) {
+        this.setState({ error: 'An error occured. Maybe check the server URL ?' });
+        console.log(error);
+      }
+    }
   }
 
   render() {
     return (
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
+        {
+          (this.state.error.length > 0) && (
+            <View style={styles.errorView}>
+              <Text style={styles.errorText}>Error: {this.state.error}</Text>
+            </View>
+          )
+        }
         <UserInput
           source={serverImg}
-          placeholder="Server"
+          placeholder="Server https://"
           autoCapitalize={'none'}
           returnKeyType={'done'}
           autoCorrect={false}
-        />        
+          defaultValue={defaultValue.server}
+          onChange={(v) => { this.setState({ serverAddr: v }); }}
+        />
         <UserInput
-          source={usernameImg}
-          placeholder="Username"
+          source={emailImg}
+          placeholder="Email"
           autoCapitalize={'none'}
           returnKeyType={'done'}
           autoCorrect={false}
+          defaultValue={defaultValue.email}
+          onChange={(v) => { this.setState({ email: v }); }}
         />
         <UserInput
           source={passwordImg}
-          secureTextEntry={this.state.showPass}
+          secureTextEntry={true}
           placeholder="Password"
           autoCapitalize={'none'}
           returnKeyType={'done'}
           autoCorrect={false}
+          defaultValue={defaultValue.email}
+          onChange={(v) => { this.setState({ password: v }); }}
         />
-        <LoginButtonSubmit />
+        <SubmitButton title="Login" onPress={() => this.auth()} isLoading={this.state.isLoading} />
       </KeyboardAvoidingView>
     );
   }
 }
+
+const DEVICE_WIDTH = Dimensions.get('window').width;
+const MARGIN = 40;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
   },
-  btnEye: {
-    position: 'absolute',
-    top: 55,
-    right: 28,
+  errorView: {
+    width: DEVICE_WIDTH - MARGIN,
+    margin: 20,
+    padding: 10,
+    backgroundColor: 'rgba(242, 222, 222, 0.8)',
+    borderStyle: 'solid',
+    borderWidth: 2,
+    borderColor: 'rgb(169, 68, 66)',
+    borderRadius: 20,
   },
-  iconEye: {
-    width: 25,
-    height: 25,
-    tintColor: 'rgba(0, 0, 0, 0.2)',
-  },
+  errorText: {
+    color: 'rgb(169, 68, 66)',
+    fontWeight: 'bold',
+  }
 });

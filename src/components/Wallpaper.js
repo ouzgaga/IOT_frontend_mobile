@@ -1,12 +1,16 @@
 import React, {Component} from 'react';
-import {StyleSheet, ImageBackground} from 'react-native';
+import { StyleSheet, ImageBackground } from 'react-native';
 
 import bgSrc from '../images/wallpaper.png';
 
 export default class Wallpaper extends Component {
+  constructor(props) {
+    super(props);
+  }
+
   render() {
     return (
-      <ImageBackground style={styles.picture} source={bgSrc}>
+      <ImageBackground style={styles.wallpaper} source={bgSrc}>
         {this.props.children}
       </ImageBackground>
     );
@@ -14,10 +18,9 @@ export default class Wallpaper extends Component {
 }
 
 const styles = StyleSheet.create({
-  picture: {
+  wallpaper: {
     flex: 1,
-    width: null,
-    height: null,
+    flexDirection: 'column',
     resizeMode: 'cover',
   },
 });

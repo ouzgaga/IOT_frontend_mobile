@@ -4,6 +4,19 @@ import Dimensions from 'Dimensions';
 import { StyleSheet, View, TextInput, Image } from 'react-native';
 
 export default class UserInput extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      value: this.props.defaultValue !== '' ? this.props.defaultValue : '',
+    };
+    this.onChange = this.onChange.bind(this);
+  }
+
+  onChange(v) {
+    this.setState({ value: v });
+    this.props.onChange(v);
+  }
+
   render() {
     return (
       <View style={styles.inputWrapper}>
@@ -17,6 +30,8 @@ export default class UserInput extends Component {
           returnKeyType={this.props.returnKeyType}
           placeholderTextColor="white"
           underlineColorAndroid="transparent"
+          onChangeText={this.onChange}
+          value={this.state.value}
         />
       </View>
     )
@@ -30,10 +45,12 @@ UserInput.propTypes = {
   autoCorrect: PropTypes.bool,
   autoCapitalize: PropTypes.string,
   returnKeyType: PropTypes.string,
+  defaultValue: PropTypes.string,
+  onChange: PropTypes.func,
 };
 
 const DEVICE_WIDTH = Dimensions.get('window').width;
-const DEVICE_HEIGHT =  Dimensions.get('window').height;
+const MARGIN = 40;
 
 const styles = StyleSheet.create({
   input: {
@@ -47,6 +64,7 @@ const styles = StyleSheet.create({
   },
   inputWrapper: {
     flex: 1,
+    marginBottom: MARGIN/2,
   },
   inlineImg: {
     position: 'absolute',
