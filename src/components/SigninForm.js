@@ -75,7 +75,7 @@ export default class SigninForm extends Component {
           source={serverImg}
           placeholder="Server"
           autoCapitalize={'none'}
-          returnKeyType={'done'}
+          returnKeyType={'next'}
           autoCorrect={false}
           onChange={(v) => { this.setState({ serverAddr: v }); }}
         />
@@ -83,7 +83,7 @@ export default class SigninForm extends Component {
           source={usernameImg}
           placeholder="Username"
           autoCapitalize={'none'}
-          returnKeyType={'done'}
+          returnKeyType={'next'}
           autoCorrect={false}
           onChange={(v) => { this.setState({ username: v }); }}
         />
@@ -91,7 +91,7 @@ export default class SigninForm extends Component {
           source={emailImg}
           placeholder="Email"
           autoCapitalize={'none'}
-          returnKeyType={'done'}
+          returnKeyType={'next'}
           autoCorrect={false}
           onChange={(v) => { this.setState({ email: v }); }}
         />

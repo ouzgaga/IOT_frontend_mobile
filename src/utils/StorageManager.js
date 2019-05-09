@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-community/async-storage';
 
+// See: https://github.com/react-native-community/react-native-async-storage
 class StorageManager {
   constructor() {
     this.TOKEN_KEY = "@TOKEN";
@@ -33,6 +34,15 @@ class StorageManager {
       console.log(`Error while removing data: ${e}`);
     }
     console.log(`Removed ${key}`);
+  }
+
+  async clearAll() {
+    try {
+      await AsyncStorage.clear()
+    } catch(e) {
+      console.log(`Error while clearing all data: ${e}`);
+    }
+    console.log('Done.')
   }
 
   setToken(value) {

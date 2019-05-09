@@ -84,7 +84,7 @@ export default class LoginForm extends Component {
           source={serverImg}
           placeholder="Server https://"
           autoCapitalize={'none'}
-          returnKeyType={'done'}
+          returnKeyType={'next'}
           autoCorrect={false}
           defaultValue={defaultValue.server}
           onChange={(v) => { this.setState({ serverAddr: v }); }}
@@ -93,7 +93,7 @@ export default class LoginForm extends Component {
           source={emailImg}
           placeholder="Email"
           autoCapitalize={'none'}
-          returnKeyType={'done'}
+          returnKeyType={'next'}
           autoCorrect={false}
           defaultValue={defaultValue.email}
           onChange={(v) => { this.setState({ email: v }); }}
