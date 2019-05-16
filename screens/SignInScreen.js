@@ -1,35 +1,42 @@
-import React, {Component} from 'react';
-import { StyleSheet, View, Text } from 'react-native';
-import Dimensions from 'Dimensions';
-
-import LoginForm from '../components/LoginForm';
+import React from 'react';
+import {
+  Text,
+  View,
+  StyleSheet,
+  Dimensions
+} from 'react-native';
 import Logo from '../components/Logo';
 import Wallpaper from '../components/Wallpaper';
-import { Actions } from 'react-native-router-flux';
+import LoginForm from '../components/LoginForm';
 
 const DEVICE_WIDTH = Dimensions.get('window').width;
-const MARGIN = 40;
 
-export default class LoginScreen extends Component {
+export default class SignInScreen extends React.Component {
+  static navigationOptions = {
+    header: null,
+  };
+
   render() {
     return (
       <Wallpaper>
         <View style={styles.wallpaper}>
           <Logo />
-          <LoginForm />
+          <LoginForm navigation={this.props.navigation}/>
           <View style={styles.authLinkSection}>
-            <Text style={styles.text} onPress={() => { Actions.signinScreen(); }}>Create an account ?</Text>
+            <Text style={styles.text}>Create an account ?</Text>
             <Text style={styles.text}>Forgot Password?</Text>
           </View>
         </View>
       </Wallpaper>
+
     );
   }
 }
 
+
 const styles = StyleSheet.create({
   authLinkSection: {
-    marginBottom: MARGIN / 2,
+    flex: 1,
     width: DEVICE_WIDTH,
     flexDirection: 'row',
     justifyContent: 'space-around',

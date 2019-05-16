@@ -7,10 +7,10 @@ import { Actions } from 'react-native-router-flux';
 import UserInput from './UserInput';
 import SubmitButton from './SubmitButton';
 
-import emailImg from '../images/email.png';
-import usernameImg from '../images/username.png';
-import passwordImg from '../images/password.png';
-import serverImg from '../images/server.png';
+import emailImg from '../assets/images/email.png';
+import usernameImg from '../assets/images/username.png';
+import passwordImg from '../assets/images/password.png';
+import serverImg from '../assets/images/server.png';
 
 export default class SigninForm extends Component {
   constructor(props) {

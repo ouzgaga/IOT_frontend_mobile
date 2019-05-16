@@ -2,14 +2,13 @@ import React, { Component } from 'react';
 import { StyleSheet, Text, Alert,
         KeyboardAvoidingView, View } from 'react-native';
 import Dimensions from 'Dimensions';
-import { Actions } from 'react-native-router-flux';
 
 import UserInput from './UserInput';
 import SubmitButton from '../components/SubmitButton';
 
-import emailImg from '../images/email.png';
-import passwordImg from '../images/password.png';
-import serverImg from '../images/server.png';
+import emailImg from '../assets/images/email.png';
+import passwordImg from '../assets/images/password.png';
+import serverImg from '../assets/images/server.png';
 import storageManager from '../utils/StorageManager';
 
 const defaultValue = {
@@ -28,10 +27,9 @@ export default class LoginForm extends Component {
       error: '',
       isLoading: false,
     };
-    this.auth = this.auth.bind(this);
   }
 
-  async auth() {
+  auth = async () => {
     if (this.state.serverAddr === '' || this.state.email === '' || this.state.password === '') {
       this.setState({ error: `At least one field is empty.` });
     }
@@ -55,7 +53,7 @@ export default class LoginForm extends Component {
         if (response.status === 201) {
           this.setState({ error: 'SUCCESS' });
           storageManager.setToken(responseJSON.token);
-          Actions.homeScreen();
+          this.props.navigation.navigate('App');
         }
         else {
           if (responseJSON.status !== undefined && responseJSON.status !== '')

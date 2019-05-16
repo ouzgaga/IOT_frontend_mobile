@@ -9,7 +9,7 @@ import { StyleSheet,
         Easing,
         Image } from 'react-native';
 
-import spinner from '../images/loading.gif';
+import spinner from '../assets/images/loading.gif';
 
 const DEVICE_WIDTH = Dimensions.get('window').width;
 const MARGIN = 40;
@@ -24,10 +24,9 @@ export default class SubmitButton extends Component {
 
     this.buttonAnimated = new Animated.Value(0);
     this.growAnimated = new Animated.Value(0);
-    this._onPress = this._onPress.bind(this);
   }
 
-  _onPress() {
+  _onPress = () => {
     if (this.state.isLoading) return;
 
     this.props.onPress();

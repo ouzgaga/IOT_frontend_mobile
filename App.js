@@ -1,49 +1,43 @@
 import React, { Component } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { Stack, Router, Scene } from 'react-native-router-flux';
+import { Platform, StyleSheet, StatusBar, View, Text } from 'react-native';
+import { createStackNavigator, createAppContainer, createDrawerNavigator, createSwitchNavigator } from "react-navigation";
+import HomeScreen from './screens/HomeScreen';
+import LinksScreen from './screens/LinksScreen';
+import SettingsScreen from './screens/SettingsScreen';
+import SignInScreen from './screens/SignInScreen'
+import AuthLoadingScreen from './screens/AuthLoadingScreen'
 
-import LoginScreen from './src/activities/LoginScreen';
-import SigninScreen from './src/activities/SigninScreen';
-import HomeScreen from './src/activities/HomeScreen';
-import DevicesListScreen from './src/activities/DevicesListScreen';
+const AuthStack = createStackNavigator({ SignIn: SignInScreen });
 
-export default class App extends Component {
-  render() {
-    return (
-      <Router style={styles.container}>
-        <Stack key="root">
-          <Scene key="homeScreen"
-            component={HomeScreen}
-            animation='fade'
-            hideNavBar={true}
-            initial={true}
-          />
-          <Scene key="loginScreen"
-            component={LoginScreen}
-            animation='fade'
-            hideNavBar={true}
-          />
-          <Scene key="signinScreen"
-            component={SigninScreen}
-            animation='fade'
-            hideNavBar={true}
-          />
-          <Scene key="deviceListScreen"
-            component={DevicesListScreen}
-            animation='fade'
-            hideNavBar={true}
-          />
-        </Stack>
-      </Router>
-    );
-  }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
+const HomeStack = createStackNavigator({
+  Home: HomeScreen,
 });
+
+const LinksStack = createStackNavigator({
+  Links: LinksScreen,
+});
+
+const SettingsStack = createStackNavigator({
+  Settings: SettingsScreen,
+});
+
+SettingsStack.navigationOptions = {
+  title: 'www',
+};
+
+const AppNavigator = createDrawerNavigator({
+  HomeStack,
+  LinksStack,
+  SettingsStack,
+});
+
+export default createAppContainer(createSwitchNavigator(
+  {
+    AuthLoading: AuthLoadingScreen,
+    App: AppNavigator,
+    Auth: AuthStack,
+  },
+  {
+    initialRouteName: 'AuthLoading',
+  }
+));
