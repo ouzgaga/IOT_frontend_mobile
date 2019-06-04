@@ -6,6 +6,8 @@ import NFCReaderScreen from './screens/NFCReaderScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import SignInScreen from './screens/SignInScreen'
 import AuthLoadingScreen from './screens/AuthLoadingScreen'
+import NewLoraNode from './screens/NewLoraNode'
+import NewVideoNode from './screens/NewVideoNode'
 
 const AuthStack = createStackNavigator({ SignIn: SignInScreen });
 
@@ -23,6 +25,22 @@ const NodesStack = createStackNavigator({
 
 NodesStack.navigationOptions = {
   title: 'Nodes',
+};
+
+const NewLoraNodeStack = createStackNavigator({
+  Nodes: NewLoraNode,
+});
+
+NewLoraNodeStack.navigationOptions = {
+  title: 'New Lora Node',
+};
+
+const NewVideoNodeStack = createStackNavigator({
+  Nodes: NewVideoNode,
+});
+
+NewVideoNodeStack.navigationOptions = {
+  title: 'New Video Node',
 };
 
 const NFCReaderStack = createStackNavigator({
@@ -44,6 +62,8 @@ SettingsStack.navigationOptions = {
 const AppNavigator = createDrawerNavigator({
   HomeStack,
   NodesStack,
+  NewLoraNodeStack,
+  NewVideoNodeStack,
   NFCReaderStack,
   SettingsStack,
 });

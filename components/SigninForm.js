@@ -21,6 +21,7 @@ export default class SigninForm extends Component {
       username: '',
       password: '',
       error: '',
+      loading:false,
     }
     this.register = this.register.bind(this);
   }
@@ -31,6 +32,8 @@ export default class SigninForm extends Component {
       this.setState({ error: `At least one field is empty.` });
     }
     else {
+      this.setState({ loading: true });
+
       try {
         const response = await fetch(`${this.state.serverAddr}/accounts/registration`, {
           method: 'POST',
@@ -58,6 +61,9 @@ export default class SigninForm extends Component {
         this.setState({ error: 'An error occured. Maybe check the server URL ?' });
         console.log(error);
       }
+
+      this.setState({ loading: false });
+
     }
   }
 
@@ -104,7 +110,7 @@ export default class SigninForm extends Component {
           autoCorrect={false}
           onChange={(v) => { this.setState({ password: v }); }}
         />
-        <SubmitButton title="Sign in" onPress={() => this.register()} />
+        <SubmitButton title="Sign in" loading={this.state.loading} onPress={() => this.register()} />
       </KeyboardAvoidingView>
     );
   }

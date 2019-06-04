@@ -20,7 +20,6 @@ export default class UserInput extends Component {
   render() {
     return (
       <View style={styles.inputWrapper}>
-        {this.props.source && <Image source={this.props.source} style={styles.inlineImg} />}
         <TextInput
           style={styles.input}
           placeholder={this.props.placeholder}
@@ -39,7 +38,6 @@ export default class UserInput extends Component {
 }
 
 UserInput.propTypes = {
-  source: PropTypes.number,
   placeholder: PropTypes.string.isRequired,
   secureTextEntry: PropTypes.bool,
   autoCorrect: PropTypes.bool,
@@ -54,11 +52,11 @@ const MARGIN = 40;
 
 const styles = StyleSheet.create({
   input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    backgroundColor: 'rgba(255, 190, 190, 0.4)',
     width: DEVICE_WIDTH - 40,
     height: 40,
     marginHorizontal: 20,
-    paddingLeft: 45,
+    paddingLeft: 10,
     borderRadius: 20,
     color: '#ffffff',
   },

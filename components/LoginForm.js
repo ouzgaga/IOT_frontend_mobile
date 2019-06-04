@@ -70,7 +70,7 @@ export default class LoginForm extends Component {
 
   render() {
     return (
-      <KeyboardAvoidingView behavior="padding" style={styles.container}>
+      <View behavior="padding" style={styles.container}>
         {
           (this.state.error.length > 0) && (
             <View style={styles.errorView}>
@@ -107,7 +107,7 @@ export default class LoginForm extends Component {
           onChange={(v) => { this.setState({ password: v }); }}
         />
         <SubmitButton title="Login" onPress={() => this.auth()} isLoading={this.state.isLoading} />
-      </KeyboardAvoidingView>
+      </View>
     );
   }
 }

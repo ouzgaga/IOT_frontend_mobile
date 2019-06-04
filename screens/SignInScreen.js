@@ -21,11 +21,7 @@ export default class SignInScreen extends React.Component {
       <Wallpaper>
         <View style={styles.wallpaper}>
           <Logo />
-          <LoginForm navigation={this.props.navigation}/>
-          <View style={styles.authLinkSection}>
-            <Text style={styles.text}>Create an account ?</Text>
-            <Text style={styles.text}>Forgot Password?</Text>
-          </View>
+          <LoginForm navigation={this.props.navigation} />
         </View>
       </Wallpaper>
 
@@ -35,19 +31,8 @@ export default class SignInScreen extends React.Component {
 
 
 const styles = StyleSheet.create({
-  authLinkSection: {
-    flex: 1,
-    width: DEVICE_WIDTH,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  text: {
-    color: 'white',
-    backgroundColor: 'transparent',
-  },
   wallpaper: {
     flex: 1,
     flexDirection: 'column',
-    justifyContent: 'space-between',
   }
 });
