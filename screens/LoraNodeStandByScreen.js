@@ -11,13 +11,14 @@ function buildTextPayload(valueToWrite) {
   ]);
 }
 
-export default class SettingsScreen extends React.Component {
+export default class LoraNodeStandByScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
-    return { headerTitle: <MenuButton navigation={navigation} title="New Lora Node" /> }
+    return { headerTitle: <MenuButton navigation={navigation} title="Lora Node stand-by" /> }
   };
 
-  constructor() {
-    super();
+
+  constructor(props) {
+    super(props);
     this.state = {
       token: '',
       supported: true,
@@ -29,17 +30,29 @@ export default class SettingsScreen extends React.Component {
       loraNameDescription: '',
       detectionNFC: false,
       isWriting: false,
+      UIDDetected: null,
+      changeStateLoraNode: false,
+      nodeIsActive: null,
     };
-  }
 
-  componentDidMount() {
-    NfcManager.isSupported()
-      .then(supported => {
-        this.setState({ supported });
-        if (supported) {
-          this._startNfc();
-        }
-      })
+    props.navigation.addListener(
+      'didBlur',
+      () => {
+        this._stopDetection();
+      }
+    );
+    props.navigation.addListener(
+      'didFocus',
+      () => {
+        NfcManager.isSupported()
+          .then(supported => {
+            this.setState({ supported });
+            if (supported) {
+              this._startNfc();
+            }
+          });
+      }
+    );
   }
 
   componentWillUnmount() {
@@ -76,6 +89,7 @@ export default class SettingsScreen extends React.Component {
       NfcManager.isEnabled()
         .then(enabled => {
           this.setState({ enabled });
+          this._startDetection();
         })
         .catch(err => {
           console.log(err);
@@ -120,7 +134,8 @@ export default class SettingsScreen extends React.Component {
     this.setState({ tag });
 
     let text = this._parseText(tag);
-    this.setState({ parsedText: text });
+
+    this.setState({ UIDDetected: text });
 
     /*
     fetch('https://mywebsite.com/endpoint/', {
@@ -135,8 +150,31 @@ export default class SettingsScreen extends React.Component {
       }),
     }).then(response => response.json())
     .then(responseJson => console.log(responseJson)); */
+    const isActive = true;
+    this.setState({
+      isActive
+    })
+    if (isActive) {
+      Alert.alert(
+        `Node ${isActive ? 'active' : 'inactive'}`,
+        `The node is ${isActive ? 'active' : 'inactive'}, do you you to ${isActive ? 'desactive' : 'active'} it`,
+        [
+          {
+            text: 'NO', onPress: () => {
+              this.setState({
+                UIDDetected: null,
+              });
+            }
+          },
+          {
+            text: 'YES', onPress: () => {
+              this._requestNdefWrite(isActive ? 'desactive' : 'active')
+            }
+          },
+        ],
+      )
+    }
 
-    this._requestNdefWrite('yoo3')
   }
 
   _stopDetection = () => {
@@ -149,7 +187,6 @@ export default class SettingsScreen extends React.Component {
       })
   }
 
-
   _parseText = (tag) => {
     try {
       if (Ndef.isType(tag.ndefMessage[0], Ndef.TNF_WELL_KNOWN, Ndef.RTD_TEXT)) {
@@ -159,28 +196,6 @@ export default class SettingsScreen extends React.Component {
       console.log(e);
     }
     return null;
-  }
-
-  fetchNameExisting = () => {
-    const { loraNodeName, loraNameDescription } = this.state;
-
-    if (loraNodeName === '' || loraNameDescription === '') {
-      Alert.alert(
-        'Text Fields empty',
-        'The name and the description must not be empty',
-        [
-
-          { text: 'OK', onPress: () => console.log('OK Pressed') },
-        ],
-
-      );
-    } else {
-      this.setState({
-        detectionNFC: true
-      });
-
-      this._startDetection();
-    }
   }
 
   _parseText = (tag) => {
@@ -195,44 +210,18 @@ export default class SettingsScreen extends React.Component {
   }
 
   render() {
-    const { tag, parsedText, detectionNFC } = this.state;
+    const { tag, parsedText, isActive, UIDDetected } = this.state;
 
+    console.log(UIDDetected)
     return (
       <View style={styles.container}>
-        {detectionNFC ? (
-          <View style={styles.container}>
 
-            <Text>Scan the Lora Node</Text>
-            <Text>Stay on the Node</Text>
-
-            <Text>{parsedText}</Text>
-
-          </View>
-
+        {UIDDetected ? (
+          <Text>{`Scan the Lora Node to ${isActive ? 'desactive' : 'active'} it`}</Text>
         ) : (
-            <View style={styles.container}>
-              <Text>Details</Text>
-              <UserInput
-                placeholder="Name"
-                autoCapitalize={'none'}
-                returnKeyType={'next'}
-                autoCorrect={false}
-                onChange={(v) => { this.setState({ loraNodeName: v }); }}
-              />
-
-              <UserInput
-                placeholder="Description"
-                autoCapitalize={'none'}
-                returnKeyType={'next'}
-                autoCorrect={false}
-                onChange={(v) => { this.setState({ loraNameDescription: v }); }}
-              />
-
-              <SubmitButton title="Submit" isLoading={this.state.loading} onPress={this.fetchNameExisting} />
-            </View>
-          )}
-
-
+            <Text>Scan the Lora Node</Text>
+          )
+        }
       </View>
     );
   }
@@ -247,26 +236,29 @@ export default class SettingsScreen extends React.Component {
 
     this.setState({ isWriting: true });
     NfcManager.requestNdefWrite(bytes)
-      .then(() => Alert.alert(
-        'New device',
-        'Congrats, the node has been registred',
-        [
-          { text: 'OK', onPress: () => { this._stopDetection(); this._cancelNdefWrite(); this.setState({ loraNodeName: '',
-          loraNameDescription: '',
-          detectionNFC: false,}) } },
-        ],
-      ))
+      .then(() => {
+        this._cancelNdefWrite();
+        Alert.alert(
+          'Device changed',
+          'Congrats, the node has been changed',
+          [
+            {
+              text: 'OK', onPress: () => {
+
+                this.setState({
+                  UIDDetected: null,
+                });
+              }
+            },
+          ],
+        )
+      })
       .catch(err => console.warn(err))
-      .then(() => { this._cancelNdefWrite(); this.setState({ isWriting: false }) });
   }
 
   _cancelNdefWrite = () => {
     this.setState({ isWriting: false });
-    NfcManager.cancelNdefWrite()
-      .then(() => console.log('write cancelled'))
-      .catch(err => console.warn(err))
   }
-
 }
 
 const styles = StyleSheet.create({
@@ -276,10 +268,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
   },
+  loraNodeDetails: {
+    flex: 1,
+    marginTop: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   nameTextInput: {
     margin: 15,
     height: 40,
     borderColor: '#7a42f4',
     borderWidth: 1
+  },
+  titleDetails: {
+    fontSize: 18,
+    marginTop: 30,
+    marginBottom: 30,
   }
 });
