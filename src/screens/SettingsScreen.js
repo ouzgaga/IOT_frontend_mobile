@@ -6,13 +6,12 @@ import SubmitButton from '../components/SubmitButton';
 import Wallpaper from '../components/Wallpaper';
 
 export default class SettingsScreen extends React.Component {
-  static navigationOptions = ({ navigation }) => {
-    return { headerTitle: <MenuButton navigation={navigation} title="Settings" /> }
-  };
+  static navigationOptions = ({ navigation }) => ({ headerTitle: <MenuButton navigation={navigation} title="Settings" /> });
 
   resetToken() {
+    const { navigation } = this.props;
     storageManager.clearValue(storageManager.TOKEN_KEY);
-    this.props.navigation.navigate('Auth')
+    navigation.navigate('Auth');
   }
 
   render() {

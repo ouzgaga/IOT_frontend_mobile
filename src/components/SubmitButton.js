@@ -1,17 +1,19 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Dimensions from 'Dimensions';
-import { StyleSheet,
-        TouchableOpacity,
-        Text,
-        View,
-        Animated,
-        Easing,
-        Image } from 'react-native';
+import Layout from '../constants/Layout';
+import {
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+  View,
+  Animated,
+  Easing,
+  Image
+} from 'react-native';
 
 import spinner from '../assets/images/loading.gif';
 
-const DEVICE_WIDTH = Dimensions.get('window').width;
+const DEVICE_WIDTH = Layout.window.width;
 const MARGIN = 40;
 
 export default class SubmitButton extends Component {
@@ -30,9 +32,9 @@ export default class SubmitButton extends Component {
     if (this.state.isLoading) return;
 
     this.props.onPress();
-  
+
     // This is for the animation
-    
+
     this.setState({ isLoading: true });
     Animated.timing(this.buttonAnimated, {
       toValue: 1,
@@ -53,14 +55,10 @@ export default class SubmitButton extends Component {
     // End of animation
   }
 
-  _onStartLoading() {
-
-  }
-
   _onGrow() {
     Animated.timing(this.growAnimated, {
       toValue: 1,
-      easing: Easing.linear,
+      easing: Easing.linear,
     }).start();
   }
 
@@ -75,19 +73,19 @@ export default class SubmitButton extends Component {
     });
     return (
       <View style={styles.container}>
-        <Animated.View style={{width: changeWidth}}>
-          <TouchableOpacity 
+        <Animated.View style={{ width: changeWidth }}>
+          <TouchableOpacity
             style={styles.button}
             onPress={this._onPress}
             activeOpacity={1}>
-            { this.state.isLoading ? (
+            {this.state.isLoading ? (
               <Image source={spinner} style={styles.image} />
             ) : (
-              <Text style={styles.text}>{this.props.title}</Text>
-            )}
+                <Text style={styles.text}>{this.props.title}</Text>
+              )}
           </TouchableOpacity>
           <Animated.View
-            style={[styles.circle, { transform: [{scale: changeScale}]}]}
+            style={[styles.circle, { transform: [{ scale: changeScale }] }]}
           />
         </Animated.View>
       </View>
@@ -105,7 +103,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: MARGIN/2,
+    marginBottom: MARGIN / 2,
   },
   button: {
     alignItems: 'center',

@@ -1,14 +1,17 @@
 import React from 'react';
-import { View, Text, StyleSheet, TextInput, Platform, Alert } from 'react-native';
+import {
+  View, Text, StyleSheet, Platform, Alert
+} from 'react-native';
+import NfcManager, { Ndef } from 'react-native-nfc-manager';
+
 import MenuButton from '../components/MenuButton';
 import SubmitButton from '../components/SubmitButton';
 import Wallpaper from '../components/Wallpaper';
 
-import NfcManager, { Ndef } from 'react-native-nfc-manager';
-import UserInput from '../components/UserInputNewNode'
-import VideoNodesAPI from '../api/VideoNodesAPI'
+import UserInput from '../components/UserInputNewNode';
+import VideoNodesAPI from '../api/VideoNodesAPI';
 import storageManager from '../utils/StorageManager';
-import Util from '../utils/Util';
+import Loader from '../components/Loader';
 
 function buildTextPayload(valueToWrite) {
   return Ndef.encodeMessage([
@@ -17,18 +20,12 @@ function buildTextPayload(valueToWrite) {
 }
 
 export default class SettingsScreen extends React.Component {
-  static navigationOptions = ({ navigation }) => {
-    return { headerTitle: <MenuButton navigation={navigation} title="New Video Node" /> }
-  };
+  static navigationOptions = ({ navigation }) => ({ headerTitle: <MenuButton navigation={navigation} title="New Video Node" /> });
 
   constructor(props) {
     super(props);
     this.state = {
       token: '',
-      supported: true,
-      enabled: false,
-      tag: {},
-      parsedText: null,
       loading: false,
       videoNodeName: '',
       videoNameDescription: '',
@@ -42,17 +39,16 @@ export default class SettingsScreen extends React.Component {
     props.navigation.addListener(
       'didBlur',
       () => {
-        this._stopDetection();
+        this.stopDetection();
       }
     );
     props.navigation.addListener(
       'didFocus',
       () => {
         NfcManager.isSupported()
-          .then(supported => {
-            this.setState({ supported });
+          .then((supported) => {
             if (supported) {
-              this._startNfc();
+              this.startNfc();
             }
           });
       }
@@ -65,110 +61,43 @@ export default class SettingsScreen extends React.Component {
 
   getToken = async () => {
     const userToken = await storageManager.getToken();
-    this.setState({ token: userToken })
+    this.setState({ token: userToken });
   }
 
-
-  componentWillUnmount() {
-    if (this._stateChangedSubscription) {
-      this._stateChangedSubscription.remove();
-    }
+  startDetection = () => {
+    NfcManager.registerTagEvent(this.onTagDiscovered)
+      .then((result) => {
+        console.log('registerTagEvent OK', result);
+      })
+      .catch((error) => {
+        console.warn('registerTagEvent fail', error);
+      });
   }
 
-  _startNfc() {
-    NfcManager.start({
-      onSessionClosedIOS: () => {
-        console.log('ios session closed');
-      }
-    })
-      .then(result => {
-        console.log('start OK', result);
-      })
-      .catch(error => {
-        console.warn('start fail', error);
-        this.setState({ supported: false });
-      })
-
-    if (Platform.OS === 'android') {
-      NfcManager.getLaunchTagEvent()
-        .then(tag => {
-          console.log('launch tag', tag);
-          if (tag) {
-            this.setState({ tag });
-          }
-        })
-        .catch(err => {
-          console.log(err);
-        })
-      NfcManager.isEnabled()
-        .then(enabled => {
-          this.setState({ enabled });
-          this._startDetection();
-        })
-        .catch(err => {
-          console.log(err);
-        })
-      NfcManager.onStateChanged(
-        event => {
-          if (event.state === 'on') {
-            this.setState({ enabled: true });
-          } else if (event.state === 'off') {
-            this.setState({ enabled: false });
-          } else if (event.state === 'turning_on') {
-            // do whatever you want
-          } else if (event.state === 'turning_off') {
-            // do whatever you want
-          }
-        }
-      )
-        .then(sub => {
-          this._stateChangedSubscription = sub;
-          // remember to call this._stateChangedSubscription.remove()
-          // when you don't want to listen to this anymore
-        })
-        .catch(err => {
-          console.warn(err);
-        })
-    }
-  }
-
-  _startDetection = () => {
-    NfcManager.registerTagEvent(this._onTagDiscovered)
-      .then(result => {
-        console.log('registerTagEvent OK', result)
-      })
-      .catch(error => {
-        console.warn('registerTagEvent fail', error)
-      })
-  }
-
-
-  _onTagDiscovered = tag => {
-
-    let text = this._parseText(tag);
+  onTagDiscovered = (tag) => {
+    const text = this.parseText(tag);
 
     // TODO : voir format des données lues par NFC, ici : séparée par un ;
     const nodeInfos = text.split(';');
 
-    if(nodeInfos[0] && nodeInfos[1]) {
-
-      this.setState({ nodeIP: nodeInfos[0] })
-      this.setState({ nodepublicKey: nodeInfos[1] })
+    if (nodeInfos[0] && nodeInfos[1]) {
+      this.setState({ nodeIP: nodeInfos[0] });
+      this.setState({ nodepublicKey: nodeInfos[1] });
       this.setState({ NFCReadText: text });
     }
   }
 
-  _stopDetection = () => {
+  stopDetection = () => {
     NfcManager.unregisterTagEvent()
-      .then(result => {
-        console.log('unregisterTagEvent OK', result)
+      .then((result) => {
+        console.log('unregisterTagEvent OK', result);
       })
-      .catch(error => {
-        console.warn('unregisterTagEvent fail', error)
-      })
+      .catch((error) => {
+        console.warn('unregisterTagEvent fail', error);
+      });
   }
 
-  _parseText = (tag) => {
+  parseText = (tag) => {
     try {
       if (Ndef.isType(tag.ndefMessage[0], Ndef.TNF_WELL_KNOWN, Ndef.RTD_TEXT)) {
         return Ndef.text.decodePayload(tag.ndefMessage[0].payload);
@@ -180,7 +109,9 @@ export default class SettingsScreen extends React.Component {
   }
 
   fetchNameExisting = async () => {
-    const { videoNodeName, videoNameDescription, token, nodeIP, nodepublicKey } = this.state;
+    const {
+      videoNodeName, videoNameDescription, token, nodeIP, nodepublicKey
+    } = this.state;
 
     if (videoNodeName === '' || videoNameDescription === '') {
       Alert.alert(
@@ -189,7 +120,7 @@ export default class SettingsScreen extends React.Component {
         [
           { text: 'OK', onPress: () => console.log('OK Pressed') },
         ],
-        {cancelable: false},
+        { cancelable: false },
       );
     } else {
       this.setState({
@@ -197,74 +128,33 @@ export default class SettingsScreen extends React.Component {
       });
     }
 
-    const response = await VideoNodesAPI.addVideoNode(token, videoNodeName, videoNameDescription, nodeIP, nodepublicKey)
+    this.setState({ loading: true });
 
-    const serverPublicKey = response.publicKey;
+    const response = await VideoNodesAPI.addVideoNode(token, videoNodeName, videoNameDescription, nodeIP, nodepublicKey);
 
-    // TODO : voir la structure des données, ici données séparée par un ';'
-    const infosToWrite = `${nodeIP};${nodepublicKey};${serverPublicKey}`;
+    this.setState({ loading: false });
 
-    this._requestNdefWrite(infosToWrite)
-  }
+    if (response.statusCode === 400) {
+      Alert.alert(
+        'Bad Request',
+        'The request has failed',
+        [
+          { text: 'OK', onPress: () => console.log('OK Pressed') },
+        ],
+        { cancelable: false },
+      );
+    } else {
+      const serverPublicKey = response.publicKey;
 
-  _parseText = (tag) => {
-    try {
-      if (Ndef.isType(tag.ndefMessage[0], Ndef.TNF_WELL_KNOWN, Ndef.RTD_TEXT)) {
-        return Ndef.text.decodePayload(tag.ndefMessage[0].payload);
-      }
-    } catch (e) {
-      console.log(e);
+      // TODO : voir la structure des données, ici données séparée par un ';'
+      const infosToWrite = `${nodeIP};${nodepublicKey};${serverPublicKey}`;
+
+      this.requestNdefWrite(infosToWrite);
     }
-    return null;
   }
 
-  render() {
-    const { detectionNFC, NFCReadText } = this.state;
-    return (
-      <Wallpaper>
-
-        <View style={styles.container}>
-
-          {NFCReadText ? (
-            detectionNFC ? (
-              <View style={styles.container}>
-                <Text style={styles.infoText}>Scan the Node to write inside</Text>
-              </View>
-            ) : (
-                <View style={styles.videoNodeDetails}>
-
-                  <Text style={styles.titleDetails}>Enter video Node name and description</Text>
-                  <UserInput
-                    placeholder="Name"
-                    autoCapitalize={'none'}
-                    returnKeyType={'next'}
-                    autoCorrect={false}
-                    onChange={(v) => { this.setState({ videoNodeName: v }); }}
-                  />
-
-                  <UserInput
-                    placeholder="Description"
-                    autoCapitalize={'none'}
-                    returnKeyType={'next'}
-                    autoCorrect={false}
-                    onChange={(v) => { this.setState({ videoNameDescription: v }); }}
-                  />
-
-                  <SubmitButton title="Submit" isLoading={this.state.loading} onPress={this.fetchNameExisting} />
-                </View>
-              )
-          ) : (
-              <Text style={styles.infoText}>Scan the Video Node to register it</Text>
-            )
-          }
-        </View>
-      </Wallpaper>
-
-    );
-  }
-
-  _requestNdefWrite = (text) => {
-    let { isWriting, token, nodeIP } = this.state;
+  requestNdefWrite = (text) => {
+    const { isWriting } = this.state;
     if (isWriting) {
       return;
     }
@@ -274,37 +164,119 @@ export default class SettingsScreen extends React.Component {
     this.setState({ isWriting: true });
     NfcManager.requestNdefWrite(bytes)
       .then(() => {
-        this._cancelNdefWrite();
-        
+        this.cancelNdefWrite();
+
         // TODO : permet de lancer le peering entre le back-en et le noeud Video
         // Décommenter la ligne ci-dessus quand le noeud Video sera prêt à faire le peering
-        //VideoNodesAPI.runVideoNode(token, nodeIP);
+        // VideoNodesAPI.runVideoNode(token, nodeIP);
         Alert.alert(
           'New device',
           'Congrats, the node has been registred',
           [
             {
-              text: 'OK', onPress: () => {
-
+              text: 'OK',
+              onPress: () => {
                 this.setState({
-                  vidoeNodeName: '',
+                  videoNodeName: '',
                   videoNameDescription: '',
                   detectionNFC: false,
                   NFCReadText: null,
                   nodeIP: null,
                   nodepublicKey: null,
-                })
+                });
               }
             },
           ],
-          {cancelable: false},
-        )
+          { cancelable: false },
+        );
       })
-      .catch(err => console.warn(err))
+      .catch(err => console.warn(err));
   }
 
-  _cancelNdefWrite = () => {
+  cancelNdefWrite = () => {
     this.setState({ isWriting: false });
+  }
+
+  startNfc() {
+    NfcManager.start({
+      onSessionClosedIOS: () => {
+        console.log('ios session closed');
+      }
+    })
+      .then((result) => {
+        console.log('start OK', result);
+      })
+      .catch((error) => {
+        console.warn('start fail', error);
+      });
+
+    if (Platform.OS === 'android') {
+      NfcManager.getLaunchTagEvent()
+        .then((tag) => {
+          console.log('launch tag', tag);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      NfcManager.isEnabled()
+        .then(() => {
+          this.startDetection();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } else {
+      this.startDetection();
+    }
+  }
+
+  render() {
+    const { detectionNFC, NFCReadText, loading } = this.state;
+    return (
+      <Wallpaper>
+
+        <Loader visible={loading} />
+
+        <View style={styles.container}>
+
+          {NFCReadText ? (
+            detectionNFC ? (
+              <View style={styles.container}>
+                <Text style={styles.infoText}>Scan the Node to write inside</Text>
+              </View>
+            )
+              : (
+                <View style={styles.videoNodeDetails}>
+
+                  <Text style={styles.titleDetails}>Enter video Node name and description</Text>
+                  <UserInput
+                    placeholder="Name"
+                    autoCapitalize="none"
+                    returnKeyType="next"
+                    autoCorrect={false}
+                    onChange={(v) => { this.setState({ videoNodeName: v }); }}
+                  />
+
+                  <UserInput
+                    placeholder="Description"
+                    autoCapitalize="none"
+                    returnKeyType="next"
+                    autoCorrect={false}
+                    onChange={(v) => { this.setState({ videoNameDescription: v }); }}
+                  />
+
+                  <SubmitButton title="Submit" isLoading={loading} onPress={this.fetchNameExisting} />
+                </View>
+              )
+          )
+            : (
+              <Text style={styles.infoText}>Scan the Video Node to register it</Text>
+            )
+          }
+        </View>
+      </Wallpaper>
+
+    );
   }
 }
 

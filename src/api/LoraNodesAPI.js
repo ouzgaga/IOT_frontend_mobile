@@ -1,8 +1,7 @@
-const baseURL = 'http://10.192.106.31:8080/api'; // TODO : changer cela quand le backend sera en prod
+const baseURL = 'http://193.247.203.90:8080/api'; // TODO : changer cela quand le backend sera en prod
 
 const fetchAllLoraNodes = async () => {
-
-  const url = baseURL + '/devices';
+  const url = `${baseURL}/devices`;
 
   const response = await fetch(url, {
     headers: {
@@ -20,34 +19,33 @@ const fetchAllLoraNodes = async () => {
 };
 
 const addLoraNode = async (deviceID, description, deviceEUI) => {
-  const url = baseURL + '/devices';
+  const url = `${baseURL}/devices`;
 
-  body = JSON.stringify({
+  const body = JSON.stringify({
     deviceID,
     description,
     deviceEUI,
   });
+  try {
+    const response = await fetch(url, {
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body
+    });
 
-  console.log(body)
+    console.log(response);
 
-  const response = await fetch(url, {
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    method: 'POST',
-    body
-  })
+    const responseJson = await response.json();
 
-  console.log(response)
-
-  const responseJson = await response.json();
-
-  console.log('new lora', responseJson)
-
-  return responseJson;
-
-}
-
+    console.log('new lora', responseJson);
+    return responseJson;
+  } catch (err) {
+    console.log('erreur');
+    return null;
+  }
+};
 
 export default { fetchAllLoraNodes, addLoraNode };

@@ -1,59 +1,39 @@
 import React from 'react';
-import { View, Text, Dimensions, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
+import { FlatList } from 'react-native';
 import MenuButton from '../components/MenuButton';
-//import nodes from '../assets/utils/nodes'
-import moment from 'moment';
-import LoraNodesAPI from '../api/LoraNodesAPI'
-import storageManager from '../utils/StorageManager';
+import LoraNodesAPI from '../api/LoraNodesAPI';
 import Wallpaper from '../components/Wallpaper';
-
-class MyListItem extends React.PureComponent {
-
-  render() {
-    const textColor = 'black';
-    const { id, name, description, ip } = this.props;
-    return (
-      <TouchableOpacity style={styles.menuItem} onPress={() => { }}>
-        <View style={styles.nodeItem}>
-          <Text style={styles.infoText}>{`ID : ${id}`}</Text>
-          <Text style={styles.infoText}>{`Name : ${name}`}</Text>
-          <Text style={styles.infoText}>{`Description : ${description}`}</Text>
-          {/*<Text>Created At : {moment(this.props.createdAt, "YYYYMMDD").fromNow()}</Text>*/}
-        </View>
-      </TouchableOpacity>
-    );
-  }
-}
-
+import NodeItem from '../components/NodeItem';
+import Loader from '../components/Loader';
 
 export default class LoraNodesListScreen extends React.Component {
-  static navigationOptions = ({ navigation }) => {
-    return { headerTitle: <MenuButton navigation={navigation} title="Lora nodes" /> }
-  };
+  static navigationOptions = ({ navigation }) => ({ headerTitle: <MenuButton navigation={navigation} title="Lora nodes" /> });
 
   constructor(props) {
     super(props);
 
     this.state = {
       nodes: [],
-    }
+      loading: false,
+    };
 
     props.navigation.addListener(
       'didFocus',
-      () => { this.fetchDatas() }
+      () => { this.fetchDatas(); }
     );
   }
 
   fetchDatas = async () => {
+    this.setState({ loading: true });
     const nodes = await LoraNodesAPI.fetchAllLoraNodes();
-    this.setState({ nodes })
+    this.setState({ nodes, loading: false });
   }
 
-  _keyExtractor = (item, index) => item.id;
+  keyExtractor = item => item.id;
 
 
-  _renderItem = ({ item }) => (
-    <MyListItem
+  renderItem = ({ item }) => (
+    <NodeItem
       id={item.id}
       name={item.name}
       description={item.description}
@@ -62,31 +42,17 @@ export default class LoraNodesListScreen extends React.Component {
   );
 
   render() {
-    const { nodes } = this.state;
+    const { nodes, loading } = this.state;
     return (
       <Wallpaper>
+        <Loader visible={loading} />
+
         <FlatList
           data={nodes}
-          keyExtractor={this._keyExtractor}
-          renderItem={this._renderItem}
+          keyExtractor={this.keyExtractor}
+          renderItem={this.renderItem}
         />
       </Wallpaper>
     );
   }
 }
-
-const styles = StyleSheet.create({
-  menuItem: {
-    width: Dimensions.get('window').width,
-    borderTopWidth: 1,
-  },
-  nodeItem: {
-    padding: 10,
-  },
-  infoText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-    backgroundColor: 'transparent',
-  },
-});

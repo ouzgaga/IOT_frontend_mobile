@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
-import { StyleSheet, KeyboardAvoidingView,
-        Text, View } from 'react-native';
+import {
+  StyleSheet, KeyboardAvoidingView,
+  Text, View
+} from 'react-native';
 import Dimensions from 'Dimensions';
 import { Actions } from 'react-native-router-flux';
 
@@ -21,14 +23,14 @@ export default class SigninForm extends Component {
       username: '',
       password: '',
       error: '',
-      loading:false,
+      loading: false,
     }
     this.register = this.register.bind(this);
   }
 
   async register() {
     if (this.state.serverAddr === '' || this.state.username === '' ||
-        this.state.email === '' || this.state.password === '') {
+      this.state.email === '' || this.state.password === '') {
       this.setState({ error: `At least one field is empty.` });
     }
     else {
@@ -49,7 +51,7 @@ export default class SigninForm extends Component {
         });
         console.log("RESPONSE:");
         console.log(response);
-        
+
         if (response.status === 201) {
           this.setState({ error: 'SUCCESS' });
           Actions.loginScreen();
@@ -57,7 +59,7 @@ export default class SigninForm extends Component {
         else {
           this.setState({ error: 'The server answered: no.' });
         }
-      } catch(error) {
+      } catch (error) {
         this.setState({ error: 'An error occured. Maybe check the server URL ?' });
         console.log(error);
       }

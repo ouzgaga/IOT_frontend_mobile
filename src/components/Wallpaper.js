@@ -1,17 +1,14 @@
-import React, {Component} from 'react';
+import React from 'react';
 import { StyleSheet, ImageBackground } from 'react-native';
 
 import bgSrc from '../assets/images/wallpaper.png';
 
-export default class Wallpaper extends Component {
-  constructor(props) {
-    super(props);
-  }
-
+export default class Wallpaper extends React.PureComponent {
   render() {
+    const { children } = this.props;
     return (
       <ImageBackground style={styles.wallpaper} source={bgSrc}>
-        {this.props.children}
+        {children}
       </ImageBackground>
     );
   }

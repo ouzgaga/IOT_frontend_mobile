@@ -2,6 +2,24 @@
 
 
 
+**Lancer le projet**
+
+Après avoir clone le projet, il vous faut premièrement le construire avec 
+
+```
+npm install
+```
+
+ Ensuite vous pouvez le lancer en mode développement avec la commande
+
+```
+react-native run-android
+```
+
+*Note : Le projet a été testé*
+
+
+
 Menu :
 
 * Show nodes

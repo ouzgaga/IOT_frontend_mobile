@@ -2,8 +2,7 @@ const baseURL = 'http://heig-iot-backend.herokuapp.com';
 
 
 const fetchAllVideoNodes = async (token) => {
-
-  const url = baseURL + '/devices';
+  const url = `${baseURL}/devices`;
 
   const response = await fetch(url, {
     headers: {
@@ -20,9 +19,9 @@ const fetchAllVideoNodes = async (token) => {
 };
 
 const addVideoNode = async (token, name, description, ip, publicKey) => {
-  const url = baseURL + '/devices';
+  const url = `${baseURL}/devices`;
 
-  body = JSON.stringify({
+  const body = JSON.stringify({
     name,
     description,
     ip,
@@ -37,16 +36,16 @@ const addVideoNode = async (token, name, description, ip, publicKey) => {
     },
     method: 'POST',
     body
-  })
+  });
 
   const responseJson = await response.json();
+  console.log(responseJson)
 
   return responseJson;
-    
-}
+};
 
 const runVideoNode = async (token, deviceIp) => {
-  const url = baseURL + '/devices/next/' + deviceIp;
+  const url = `${baseURL}/devices/next/${deviceIp}`;
 
   const response = await fetch(url, {
     headers: {
@@ -55,14 +54,12 @@ const runVideoNode = async (token, deviceIp) => {
       Authorization: `Bearer ${token}`
     },
     method: 'GET',
-  })
+  });
+
 
   const responseJson = await response.json();
 
   return responseJson;
-    
-}
- 
-
+};
 
 export default { fetchAllVideoNodes, addVideoNode, runVideoNode };

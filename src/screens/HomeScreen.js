@@ -1,93 +1,74 @@
 import React from 'react';
 import {
-  Image,
   Platform,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  Button,
   View,
 } from 'react-native';
-import MenuButton from '../components/MenuButton';
-import storageManager from '../utils/StorageManager';
 import NfcManager from 'react-native-nfc-manager';
+import MenuButton from '../components/MenuButton';
 import Wallpaper from '../components/Wallpaper';
 
 
 export default class HomeScreen extends React.Component {
-  static navigationOptions = ({ navigation }) => {
-    return { headerTitle: <MenuButton navigation={navigation} title="Home" /> }
-  };
+  static navigationOptions = ({ navigation }) => ({ headerTitle: <MenuButton navigation={navigation} title="Home" /> });
 
   constructor() {
     super();
     this.state = {
-      token: '',
       supported: true,
       enabled: false,
     };
-
-    storageManager.getToken().then(t => {
-      if (t === undefined) {
-        this.props.navigation.navigate('Auth')
-      } else {
-        this.setState({ token: t });
-      }
-    });
   }
 
 
   componentDidMount() {
     NfcManager.isSupported()
-      .then(supported => {
+      .then((supported) => {
         this.setState({ supported });
         if (supported) {
-          this._startNfc();
+          this.startNfc();
         }
-      })
+      });
   }
 
-  componentWillUnmount() {
-    if (this._stateChangedSubscription) {
-      this._stateChangedSubscription.remove();
+  goToNfcSetting = () => {
+    if (Platform.OS === 'android') {
+      NfcManager.goToNfcSetting()
+        .then((result) => {
+          console.log('goToNfcSetting OK', result);
+        })
+        .catch((error) => {
+          console.warn('goToNfcSetting fail', error);
+        });
     }
   }
 
-  _startNfc() {
+  startNfc() {
     NfcManager.start({
       onSessionClosedIOS: () => {
         console.log('ios session closed');
       }
     })
-      .then(result => {
+      .then((result) => {
         console.log('start OK', result);
       })
-      .catch(error => {
+      .catch((error) => {
         console.warn('start fail', error);
         this.setState({ supported: false });
-      })
+      });
 
     if (Platform.OS === 'android') {
-      NfcManager.getLaunchTagEvent()
-        .then(tag => {
-          console.log('launch tag', tag);
-          if (tag) {
-            this.setState({ tag });
-          }
-        })
-        .catch(err => {
-          console.log(err);
-        })
       NfcManager.isEnabled()
-        .then(enabled => {
+        .then((enabled) => {
           this.setState({ enabled });
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err);
-        })
+        });
       NfcManager.onStateChanged(
-        event => {
+        (event) => {
           if (event.state === 'on') {
             this.setState({ enabled: true });
           } else if (event.state === 'off') {
@@ -98,34 +79,12 @@ export default class HomeScreen extends React.Component {
             // do whatever you want
           }
         }
-      )
-        .then(sub => {
-          this._stateChangedSubscription = sub;
-          // remember to call this._stateChangedSubscription.remove()
-          // when you don't want to listen to this anymore
-        })
-        .catch(err => {
-          console.warn(err);
-        })
+      );
     }
   }
-
-
-  _goToNfcSetting = () => {
-    if (Platform.OS === 'android') {
-      NfcManager.goToNfcSetting()
-        .then(result => {
-          console.log('goToNfcSetting OK', result)
-        })
-        .catch(error => {
-          console.warn('goToNfcSetting fail', error)
-        })
-    }
-  }
-
 
   render() {
-    let { supported, enabled } = this.state;
+    const { supported, enabled } = this.state;
 
     return (
       <Wallpaper>
@@ -138,7 +97,7 @@ export default class HomeScreen extends React.Component {
             <View>
               <Text style={styles.infoText}>{`NFC ${enabled ? 'is' : 'is not'} enabled on your device`}</Text>
 
-              <TouchableOpacity onPress={this._goToNfcSetting}>
+              <TouchableOpacity onPress={this.goToNfcSetting}>
                 <View style={styles.centerContainer}>
                   <Text style={styles.linkText}>Go to NFC setting</Text>
                 </View>
@@ -170,7 +129,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     backgroundColor: 'transparent',
     marginTop: 20,
-    marginBottom:50,
+    marginBottom: 50,
   },
   infoText: {
     color: 'white',

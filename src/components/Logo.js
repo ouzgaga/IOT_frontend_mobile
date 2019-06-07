@@ -1,12 +1,7 @@
-import React, {Component} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
-export default class Logo extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {text: ''};
-  }
-
+export default class Logo extends React.PureComponent {
   render() {
     return (
       <View style={styles.container}>
@@ -19,7 +14,7 @@ export default class Logo extends Component {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'center',
   },
   text: {
     color: 'white',
@@ -27,6 +22,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     backgroundColor: 'transparent',
     marginTop: 20,
-    marginBottom:20,
+    marginBottom: 20,
   }
 });

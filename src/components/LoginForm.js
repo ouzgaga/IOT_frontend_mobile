@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, Alert,
-        KeyboardAvoidingView, View } from 'react-native';
-import Dimensions from 'Dimensions';
+import {
+  StyleSheet, Text, View
+} from 'react-native';
+import Layout from '../constants/Layout';
 
 import UserInput from './UserInput';
-import SubmitButton from '../components/SubmitButton';
+import SubmitButton from './SubmitButton';
 
 import emailImg from '../assets/images/email.png';
 import passwordImg from '../assets/images/password.png';
@@ -12,10 +13,10 @@ import serverImg from '../assets/images/server.png';
 import storageManager from '../utils/StorageManager';
 
 const defaultValue = {
-  server: "https://heig-iot-backend.herokuapp.com",
-  email: "admin@iot.com",
-  password: "mySuperPassword",
-}
+  server: 'https://heig-iot-backend.herokuapp.com',
+  email: 'admin@iot.com',
+  password: 'mySuperPassword',
+};
 
 export default class LoginForm extends Component {
   constructor(props) {
@@ -31,7 +32,7 @@ export default class LoginForm extends Component {
 
   auth = async () => {
     if (this.state.serverAddr === '' || this.state.email === '' || this.state.password === '') {
-      this.setState({ error: `At least one field is empty.` });
+      this.setState({ error: 'At least one field is empty.' });
     }
     else {
       this.setState({ isLoading: true });
@@ -55,13 +56,11 @@ export default class LoginForm extends Component {
           storageManager.setToken(responseJSON.token);
           this.props.navigation.navigate('App');
         }
-        else {
-          if (responseJSON.status !== undefined && responseJSON.status !== '')
-            this.setState({ error: responseJSON.error });
-          else
-            this.setState({ error: 'An error occured. Maybe check the server URL ?' });
-        }
-      } catch(error) {
+        else if (responseJSON.status !== undefined && responseJSON.status !== '')
+          this.setState({ error: responseJSON.error });
+        else
+          this.setState({ error: 'An error occured. Maybe check the server URL ?' });
+      } catch (error) {
         this.setState({ error: 'An error occured. Maybe check the server URL ?' });
         console.log(error);
       }
@@ -69,20 +68,25 @@ export default class LoginForm extends Component {
   }
 
   render() {
+    const { isLoading, error } = this.state;
     return (
       <View behavior="padding" style={styles.container}>
         {
-          (this.state.error.length > 0) && (
+          (error.length > 0) && (
             <View style={styles.errorView}>
-              <Text style={styles.errorText}>Error: {this.state.error}</Text>
+              <Text style={styles.errorText}>
+                Error:
+                {' '}
+                {error}
+              </Text>
             </View>
           )
         }
         <UserInput
           source={serverImg}
           placeholder="Server https://"
-          autoCapitalize={'none'}
-          returnKeyType={'next'}
+          autoCapitalize="none"
+          returnKeyType="next"
           autoCorrect={false}
           defaultValue={defaultValue.server}
           onChange={(v) => { this.setState({ serverAddr: v }); }}
@@ -90,29 +94,29 @@ export default class LoginForm extends Component {
         <UserInput
           source={emailImg}
           placeholder="Email"
-          autoCapitalize={'none'}
-          returnKeyType={'next'}
+          autoCapitalize="none"
+          returnKeyType="next"
           autoCorrect={false}
           defaultValue={defaultValue.email}
           onChange={(v) => { this.setState({ email: v }); }}
         />
         <UserInput
           source={passwordImg}
-          secureTextEntry={true}
+          secureTextEntry
           placeholder="Password"
-          autoCapitalize={'none'}
-          returnKeyType={'done'}
+          autoCapitalize="none"
+          returnKeyType="done"
           autoCorrect={false}
           defaultValue={defaultValue.email}
           onChange={(v) => { this.setState({ password: v }); }}
         />
-        <SubmitButton title="Login" onPress={() => this.auth()} isLoading={this.state.isLoading} />
+        <SubmitButton title="Login" onPress={() => this.auth()} isLoading={isLoading} />
       </View>
     );
   }
 }
 
-const DEVICE_WIDTH = Dimensions.get('window').width;
+const DEVICE_WIDTH = Layout.window.width;
 const MARGIN = 40;
 
 const styles = StyleSheet.create({
