@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TextInput, Platform, Alert } from 'react-native';
-import MenuButton from '../navigation/MenuButton';
+import MenuButton from '../components/MenuButton';
 import SubmitButton from '../components/SubmitButton';
 import NfcManager, { Ndef } from 'react-native-nfc-manager';
 import UserInput from '../components/UserInputNewNode'
@@ -13,8 +13,9 @@ function buildTextPayload(valueToWrite) {
 
 export default class SettingsScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
-    return { headerTitle: <MenuButton navigation={navigation} title="New Video Node" /> }
+    return { headerTitle: <MenuButton navigation={navigation} title="New Lora Node" /> }
   };
+
   constructor(props) {
     super(props);
     this.state = {
@@ -24,8 +25,8 @@ export default class SettingsScreen extends React.Component {
       tag: {},
       parsedText: null,
       loading: false,
-      videoNodeName: '',
-      videoNameDescription: '',
+      loraNodeName: '',
+      loraNameDescription: '',
       detectionNFC: false,
       isWriting: false,
       UIDDetected: null,
@@ -171,9 +172,9 @@ export default class SettingsScreen extends React.Component {
   }
 
   fetchNameExisting = () => {
-    const { videoNodeName, videoNameDescription } = this.state;
+    const { loraNodeName, loraNameDescription } = this.state;
 
-    if (videoNodeName === '' || videoNameDescription === '') {
+    if (loraNodeName === '' || loraNameDescription === '') {
       Alert.alert(
         'Text Fields empty',
         'The name and the description must not be empty',
@@ -188,7 +189,7 @@ export default class SettingsScreen extends React.Component {
       });
 
     }
-    this._requestNdefWrite(this.state.videoNodeName)
+    this._requestNdefWrite(this.state.loraNodeName)
 
   }
 
@@ -205,6 +206,8 @@ export default class SettingsScreen extends React.Component {
 
   render() {
     const { tag, parsedText, detectionNFC, UIDDetected } = this.state;
+
+    console.log(UIDDetected)
     return (
       <View style={styles.container}>
 
@@ -214,17 +217,17 @@ export default class SettingsScreen extends React.Component {
               <Text>Scan the Node to write inside</Text>
             </View>
           ) : (
-              <View style={styles.videoNodeDetails}>
+              <View style={styles.loraNodeDetails}>
 
                 <Text>{`UID : ${UIDDetected}`}</Text>
 
-                <Text style={styles.titleDetails}>Enter video Node name and description</Text>
+                <Text style={styles.titleDetails}>Enter Lora Node name and description</Text>
                 <UserInput
                   placeholder="Name"
                   autoCapitalize={'none'}
                   returnKeyType={'next'}
                   autoCorrect={false}
-                  onChange={(v) => { this.setState({ videoNodeName: v }); }}
+                  onChange={(v) => { this.setState({ loraNodeName: v }); }}
                 />
 
                 <UserInput
@@ -232,14 +235,14 @@ export default class SettingsScreen extends React.Component {
                   autoCapitalize={'none'}
                   returnKeyType={'next'}
                   autoCorrect={false}
-                  onChange={(v) => { this.setState({ videoNameDescription: v }); }}
+                  onChange={(v) => { this.setState({ loraNameDescription: v }); }}
                 />
 
                 <SubmitButton title="Submit" isLoading={this.state.loading} onPress={this.fetchNameExisting} />
               </View>
             )
         ) : (
-            <Text>Scan the Video Node to register it</Text>
+            <Text>Scan the Lora Node to register it</Text>
           )
         }
       </View>
@@ -266,8 +269,8 @@ export default class SettingsScreen extends React.Component {
               text: 'OK', onPress: () => {
 
                 this.setState({
-                  vidoeNodeName: '',
-                  videoNameDescription: '',
+                  loraNodeName: '',
+                  loraNameDescription: '',
                   detectionNFC: false,
                   UIDDetected: null,
                 })
@@ -291,7 +294,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
   },
-  videoNodeDetails: {
+  loraNodeDetails: {
     flex: 1,
     marginTop: 20,
     justifyContent: 'center',

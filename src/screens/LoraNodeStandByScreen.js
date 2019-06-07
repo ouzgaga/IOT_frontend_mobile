@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TextInput, Platform, Alert } from 'react-native';
-import MenuButton from '../navigation/MenuButton';
+import MenuButton from '../components/MenuButton';
 import SubmitButton from '../components/SubmitButton';
 import NfcManager, { Ndef } from 'react-native-nfc-manager';
 import UserInput from '../components/UserInputNewNode'
@@ -11,10 +11,11 @@ function buildTextPayload(valueToWrite) {
   ]);
 }
 
-export default class SettingsScreen extends React.Component {
+export default class LoraNodeStandByScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
-    return { headerTitle: <MenuButton navigation={navigation} title="New Lora Node" /> }
+    return { headerTitle: <MenuButton navigation={navigation} title="Lora Node stand-by" /> }
   };
+
 
   constructor(props) {
     super(props);
@@ -30,6 +31,8 @@ export default class SettingsScreen extends React.Component {
       detectionNFC: false,
       isWriting: false,
       UIDDetected: null,
+      changeStateLoraNode: false,
+      nodeIsActive: null,
     };
 
     props.navigation.addListener(
@@ -147,6 +150,30 @@ export default class SettingsScreen extends React.Component {
       }),
     }).then(response => response.json())
     .then(responseJson => console.log(responseJson)); */
+    const isActive = true;
+    this.setState({
+      isActive
+    })
+    if (isActive) {
+      Alert.alert(
+        `Node ${isActive ? 'active' : 'inactive'}`,
+        `The node is ${isActive ? 'active' : 'inactive'}, do you you to ${isActive ? 'desactive' : 'active'} it`,
+        [
+          {
+            text: 'NO', onPress: () => {
+              this.setState({
+                UIDDetected: null,
+              });
+            }
+          },
+          {
+            text: 'YES', onPress: () => {
+              this._requestNdefWrite(isActive ? 'desactive' : 'active')
+            }
+          },
+        ],
+      )
+    }
 
   }
 
@@ -171,28 +198,6 @@ export default class SettingsScreen extends React.Component {
     return null;
   }
 
-  fetchNameExisting = () => {
-    const { loraNodeName, loraNameDescription } = this.state;
-
-    if (loraNodeName === '' || loraNameDescription === '') {
-      Alert.alert(
-        'Text Fields empty',
-        'The name and the description must not be empty',
-        [
-          { text: 'OK', onPress: () => console.log('OK Pressed') },
-        ],
-
-      );
-    } else {
-      this.setState({
-        detectionNFC: true
-      });
-
-    }
-    this._requestNdefWrite(this.state.loraNodeName)
-
-  }
-
   _parseText = (tag) => {
     try {
       if (Ndef.isType(tag.ndefMessage[0], Ndef.TNF_WELL_KNOWN, Ndef.RTD_TEXT)) {
@@ -205,44 +210,16 @@ export default class SettingsScreen extends React.Component {
   }
 
   render() {
-    const { tag, parsedText, detectionNFC, UIDDetected } = this.state;
+    const { tag, parsedText, isActive, UIDDetected } = this.state;
 
     console.log(UIDDetected)
     return (
       <View style={styles.container}>
 
         {UIDDetected ? (
-          detectionNFC ? (
-            <View style={styles.container}>
-              <Text>Scan the Node to write inside</Text>
-            </View>
-          ) : (
-              <View style={styles.loraNodeDetails}>
-
-                <Text>{`UID : ${UIDDetected}`}</Text>
-
-                <Text style={styles.titleDetails}>Enter Lora Node name and description</Text>
-                <UserInput
-                  placeholder="Name"
-                  autoCapitalize={'none'}
-                  returnKeyType={'next'}
-                  autoCorrect={false}
-                  onChange={(v) => { this.setState({ loraNodeName: v }); }}
-                />
-
-                <UserInput
-                  placeholder="Description"
-                  autoCapitalize={'none'}
-                  returnKeyType={'next'}
-                  autoCorrect={false}
-                  onChange={(v) => { this.setState({ loraNameDescription: v }); }}
-                />
-
-                <SubmitButton title="Submit" isLoading={this.state.loading} onPress={this.fetchNameExisting} />
-              </View>
-            )
+          <Text>{`Scan the Lora Node to ${isActive ? 'desactive' : 'active'} it`}</Text>
         ) : (
-            <Text>Scan the Lora Node to register it</Text>
+            <Text>Scan the Lora Node</Text>
           )
         }
       </View>
@@ -262,18 +239,15 @@ export default class SettingsScreen extends React.Component {
       .then(() => {
         this._cancelNdefWrite();
         Alert.alert(
-          'New device',
-          'Congrats, the node has been registred',
+          'Device changed',
+          'Congrats, the node has been changed',
           [
             {
               text: 'OK', onPress: () => {
 
                 this.setState({
-                  loraNodeName: '',
-                  loraNameDescription: '',
-                  detectionNFC: false,
                   UIDDetected: null,
-                })
+                });
               }
             },
           ],

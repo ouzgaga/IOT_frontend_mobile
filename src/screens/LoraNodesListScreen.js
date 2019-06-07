@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, Dimensions, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
-import MenuButton from '../navigation/MenuButton';
-import SubmitButton from '../components/SubmitButton';
+import MenuButton from '../components/MenuButton';
 //import nodes from '../assets/utils/nodes'
 import moment from 'moment';
 

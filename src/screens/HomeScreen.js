@@ -9,9 +9,11 @@ import {
   Button,
   View,
 } from 'react-native';
-import MenuButton from '../navigation/MenuButton';
+import MenuButton from '../components/MenuButton';
 import storageManager from '../utils/StorageManager';
 import NfcManager from 'react-native-nfc-manager';
+import Wallpaper from '../components/Wallpaper';
+
 
 export default class HomeScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -126,22 +128,30 @@ export default class HomeScreen extends React.Component {
     let { supported, enabled } = this.state;
 
     return (
-      <View style={styles.container}>
-        <Text>Welcome !</Text>
+      <Wallpaper>
+        <View style={styles.container}>
+          <Text style={styles.titleText}>Welcome !</Text>
 
-        <Text>{`Is NFC supported ? ${supported}`}</Text>
-        <Text>{`Is NFC enabled (Android only)? ${enabled}`}</Text>
+          <Text style={styles.infoText}>{`NFC ${supported ? 'is' : 'is not'} supported on your device`}</Text>
 
+          {Platform.OS === 'android' && (
+            <View>
+              <Text style={styles.infoText}>{`NFC ${enabled ? 'is' : 'is not'} enabled on your device`}</Text>
 
-        <TouchableOpacity style={{ marginTop: 20 }} onPress={this._goToNfcSetting}>
-          <Text >(android) Go to NFC setting</Text>
-        </TouchableOpacity>
+              <TouchableOpacity onPress={this._goToNfcSetting}>
+                <View style={styles.centerContainer}>
+                  <Text style={styles.linkText}>Go to NFC setting</Text>
+                </View>
+              </TouchableOpacity>
 
-      </View>
+            </View>
+          )}
+
+        </View>
+      </Wallpaper>
+
     );
   }
-
-
 }
 
 const styles = StyleSheet.create({
@@ -149,6 +159,32 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+  },
+  centerContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  titleText: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
+    backgroundColor: 'transparent',
+    marginTop: 20,
+    marginBottom:50,
+  },
+  infoText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    backgroundColor: 'transparent',
+    marginTop: 20,
+  },
+  linkText: {
+    color: 'pink',
+    fontSize: 16,
+    fontWeight: 'bold',
+    backgroundColor: 'transparent',
+    marginTop: 20,
+    textDecorationLine: 'underline',
   },
 });

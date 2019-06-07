@@ -1,9 +1,14 @@
 import React from 'react';
 import { View, Text, StyleSheet, TextInput, Platform, Alert } from 'react-native';
-import MenuButton from '../navigation/MenuButton';
+import MenuButton from '../components/MenuButton';
 import SubmitButton from '../components/SubmitButton';
+import Wallpaper from '../components/Wallpaper';
+
 import NfcManager, { Ndef } from 'react-native-nfc-manager';
 import UserInput from '../components/UserInputNewNode'
+import VideoNodesAPI from '../api/VideoNodesAPI'
+import storageManager from '../utils/StorageManager';
+import Util from '../utils/Util';
 
 function buildTextPayload(valueToWrite) {
   return Ndef.encodeMessage([
@@ -11,29 +16,17 @@ function buildTextPayload(valueToWrite) {
   ]);
 }
 
-export default class LoraNodeStandByScreen extends React.Component {
+
+export default class SettingsScreen extends React.Component {
   static navigationOptions = ({ navigation }) => {
-    return { headerTitle: <MenuButton navigation={navigation} title="Lora Node stand-by" /> }
+    return { headerTitle: <MenuButton navigation={navigation} title="NFC Reader" /> }
   };
-
-
   constructor(props) {
     super(props);
     this.state = {
-      token: '',
-      supported: true,
-      enabled: false,
-      tag: {},
-      parsedText: null,
-      loading: false,
-      loraNodeName: '',
-      loraNameDescription: '',
-      detectionNFC: false,
-      isWriting: false,
-      UIDDetected: null,
-      changeStateLoraNode: false,
-      nodeIsActive: null,
+      NFCReadText: null,
     };
+
 
     props.navigation.addListener(
       'didBlur',
@@ -54,6 +47,16 @@ export default class LoraNodeStandByScreen extends React.Component {
       }
     );
   }
+
+  componentDidMount() {
+    this.getToken();
+  }
+
+  getToken = async () => {
+    const userToken = await storageManager.getToken();
+    this.setState({ token: userToken })
+  }
+
 
   componentWillUnmount() {
     if (this._stateChangedSubscription) {
@@ -131,49 +134,9 @@ export default class LoraNodeStandByScreen extends React.Component {
 
   _onTagDiscovered = tag => {
 
-    this.setState({ tag });
-
     let text = this._parseText(tag);
 
-    this.setState({ UIDDetected: text });
-
-    /*
-    fetch('https://mywebsite.com/endpoint/', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        firstParam: 'yourValue',
-        secondParam: 'yourOtherValue',
-      }),
-    }).then(response => response.json())
-    .then(responseJson => console.log(responseJson)); */
-    const isActive = true;
-    this.setState({
-      isActive
-    })
-    if (isActive) {
-      Alert.alert(
-        `Node ${isActive ? 'active' : 'inactive'}`,
-        `The node is ${isActive ? 'active' : 'inactive'}, do you you to ${isActive ? 'desactive' : 'active'} it`,
-        [
-          {
-            text: 'NO', onPress: () => {
-              this.setState({
-                UIDDetected: null,
-              });
-            }
-          },
-          {
-            text: 'YES', onPress: () => {
-              this._requestNdefWrite(isActive ? 'desactive' : 'active')
-            }
-          },
-        ],
-      )
-    }
+    this.setState({ NFCReadText: text });
 
   }
 
@@ -198,67 +161,21 @@ export default class LoraNodeStandByScreen extends React.Component {
     return null;
   }
 
-  _parseText = (tag) => {
-    try {
-      if (Ndef.isType(tag.ndefMessage[0], Ndef.TNF_WELL_KNOWN, Ndef.RTD_TEXT)) {
-        return Ndef.text.decodePayload(tag.ndefMessage[0].payload);
-      }
-    } catch (e) {
-      console.log(e);
-    }
-    return null;
-  }
-
   render() {
-    const { tag, parsedText, isActive, UIDDetected } = this.state;
-
-    console.log(UIDDetected)
+    const { NFCReadText } = this.state;
     return (
-      <View style={styles.container}>
+      <Wallpaper>
+        <View style={styles.container}>
+        <Text style={styles.titleDetails}>Read text NFC</Text>
 
-        {UIDDetected ? (
-          <Text>{`Scan the Lora Node to ${isActive ? 'desactive' : 'active'} it`}</Text>
-        ) : (
-            <Text>Scan the Lora Node</Text>
-          )
-        }
-      </View>
+        {NFCReadText && (
+          <Text style={styles.infoText}>{NFCReadText}</Text>
+        )}
+        </View>
+      </Wallpaper>
     );
   }
 
-  _requestNdefWrite = (text) => {
-    let { isWriting } = this.state;
-    if (isWriting) {
-      return;
-    }
-
-    const bytes = buildTextPayload(text);
-
-    this.setState({ isWriting: true });
-    NfcManager.requestNdefWrite(bytes)
-      .then(() => {
-        this._cancelNdefWrite();
-        Alert.alert(
-          'Device changed',
-          'Congrats, the node has been changed',
-          [
-            {
-              text: 'OK', onPress: () => {
-
-                this.setState({
-                  UIDDetected: null,
-                });
-              }
-            },
-          ],
-        )
-      })
-      .catch(err => console.warn(err))
-  }
-
-  _cancelNdefWrite = () => {
-    this.setState({ isWriting: false });
-  }
 }
 
 const styles = StyleSheet.create({
@@ -266,23 +183,20 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  loraNodeDetails: {
-    flex: 1,
-    marginTop: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  nameTextInput: {
-    margin: 15,
-    height: 40,
-    borderColor: '#7a42f4',
-    borderWidth: 1
   },
   titleDetails: {
+    color: 'white',
     fontSize: 18,
-    marginTop: 30,
-    marginBottom: 30,
-  }
+    fontWeight: 'bold',
+    backgroundColor: 'transparent',
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  infoText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    backgroundColor: 'transparent',
+    margin: 20,
+  },
 });

@@ -1,15 +1,14 @@
-import React, { Component } from 'react';
 import { createStackNavigator, createAppContainer, createDrawerNavigator, createSwitchNavigator } from "react-navigation";
-import HomeScreen from './screens/HomeScreen';
-import NodesScreen from './screens/NodesScreen'
-import NFCReaderScreen from './screens/NFCReaderScreen';
-import SettingsScreen from './screens/SettingsScreen';
-import SignInScreen from './screens/SignInScreen'
-import AuthLoadingScreen from './screens/AuthLoadingScreen'
-import NewLoraNodeScreen from './screens/NewLoraNodeScreen'
-import LoraNodeStandByScreen from './screens/LoraNodeStandByScreen'
-
-import NewVideoNode from './screens/NewVideoNodeScreen'
+import HomeScreen from './src/screens/HomeScreen';
+import LoraNodesListScreen from './src/screens/LoraNodesListScreen'
+import VideoNodesListScreen from './src/screens/VideoNodesListScreen'
+import NFCReaderScreen from './src/screens/NFCReaderScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
+import SignInScreen from './src/screens/SignInScreen'
+import AuthLoadingScreen from './src/screens/AuthLoadingScreen'
+import NewLoraNodeScreen from './src/screens/NewLoraNodeScreen'
+import LoraNodeStandByScreen from './src/screens/LoraNodeStandByScreen'
+import NewVideoNode from './src/screens/NewVideoNodeScreen'
 
 const AuthStack = createStackNavigator({ SignIn: SignInScreen });
 
@@ -21,12 +20,20 @@ HomeStack.navigationOptions = {
   title: 'Home',
 };
 
-const NodesStack = createStackNavigator({
-  Nodes: NodesScreen,
+const LoraNodesListStack = createStackNavigator({
+  Nodes: LoraNodesListScreen,
 });
 
-NodesStack.navigationOptions = {
-  title: 'Nodes',
+LoraNodesListStack.navigationOptions = {
+  title: 'Lora Nodes',
+};
+
+const VideoNodesListStack = createStackNavigator({
+  Nodes: VideoNodesListScreen,
+});
+
+VideoNodesListStack.navigationOptions = {
+  title: 'Video Nodes',
 };
 
 const NewLoraNodeStack = createStackNavigator({
@@ -71,6 +78,8 @@ SettingsStack.navigationOptions = {
 
 const AppNavigator = createDrawerNavigator({
   HomeStack,
+  LoraNodesListStack,
+  VideoNodesListStack,
   NewLoraNodeStack,
   LoraNodeStandByStack,
   NewVideoNodeStack,
