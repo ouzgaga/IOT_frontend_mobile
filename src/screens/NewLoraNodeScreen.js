@@ -8,7 +8,6 @@ import NfcManager, { Ndef } from 'react-native-nfc-manager';
 import UserInput from '../components/UserInputNewNode'
 import LoraNodesAPI from '../api/LoraNodesAPI'
 import storageManager from '../utils/StorageManager';
-import Util from '../utils/Util';
 
 function buildTextPayload(valueToWrite) {
   return Ndef.encodeMessage([
@@ -148,9 +147,9 @@ export default class SettingsScreen extends React.Component {
 
     // TODO : voir format des données lues par NFC
 
-      this.setState({ nodeUID: text })
-      this.setState({ NFCReadText: text });
-    
+    this.setState({ nodeUID: text })
+    this.setState({ NFCReadText: text });
+
   }
 
   _stopDetection = () => {
@@ -175,7 +174,7 @@ export default class SettingsScreen extends React.Component {
   }
 
   fetchNameExisting = async () => {
-    const { videoNodeName, videoNameDescription, token, nodeUID, nodepublicKey } = this.state;
+    const { videoNodeName, videoNameDescription, nodeUID } = this.state;
 
     if (videoNodeName === '' || videoNameDescription === '') {
       Alert.alert(
@@ -184,6 +183,7 @@ export default class SettingsScreen extends React.Component {
         [
           { text: 'OK', onPress: () => console.log('OK Pressed') },
         ],
+        {cancelable: false},
       );
     } else {
       this.setState({
@@ -191,13 +191,14 @@ export default class SettingsScreen extends React.Component {
       });
     }
 
-    console.log(videoNodeName, videoNameDescription, nodeUID)
     const response = await LoraNodesAPI.addLoraNode(videoNodeName, videoNameDescription, nodeUID)
 
-    console.log('response 2', response)
+    // TODO : utiliser la response ici
+    const APPKEY = 'appkey';
+    const APPEUI = 'appeui';
 
     // TODO : voir la structure des données, ici données séparée par un ';'
-    const infosToWrite = `${nodeUID}`;
+    const infosToWrite = `${APPKEY};${APPEUI};${nodeUID}`;
 
     this._requestNdefWrite(infosToWrite)
   }
@@ -254,7 +255,6 @@ export default class SettingsScreen extends React.Component {
           }
         </View>
       </Wallpaper>
-
     );
   }
 
@@ -270,7 +270,7 @@ export default class SettingsScreen extends React.Component {
     NfcManager.requestNdefWrite(bytes)
       .then(() => {
         this._cancelNdefWrite();
-        
+
         Alert.alert(
           'New device',
           'Congrats, the node has been registred',
@@ -288,6 +288,7 @@ export default class SettingsScreen extends React.Component {
               }
             },
           ],
+          {cancelable: false},
         )
       })
       .catch(err => console.warn(err))

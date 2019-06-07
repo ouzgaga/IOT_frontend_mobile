@@ -48,7 +48,9 @@ export default class VideoNodesListScreen extends React.Component {
   fetchDatas = async () => {
     const userToken = await storageManager.getToken();
     const nodes = await VideoNodesAPI.fetchAllVideoNodes(userToken);
-    this.setState({ nodes })
+    if(nodes) {
+      this.setState({ nodes })
+    }
   }
 
   _keyExtractor = (item, index) => item.id;

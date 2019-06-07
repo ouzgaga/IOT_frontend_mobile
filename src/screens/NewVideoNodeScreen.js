@@ -189,6 +189,7 @@ export default class SettingsScreen extends React.Component {
         [
           { text: 'OK', onPress: () => console.log('OK Pressed') },
         ],
+        {cancelable: false},
       );
     } else {
       this.setState({
@@ -296,6 +297,7 @@ export default class SettingsScreen extends React.Component {
               }
             },
           ],
+          {cancelable: false},
         )
       })
       .catch(err => console.warn(err))

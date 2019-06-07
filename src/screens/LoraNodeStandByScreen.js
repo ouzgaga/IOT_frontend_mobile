@@ -158,6 +158,7 @@ export default class LoraNodeStandByScreen extends React.Component {
             }
           },
         ],
+        {cancelable: false},
       )
     }
 
@@ -238,6 +239,7 @@ export default class LoraNodeStandByScreen extends React.Component {
               }
             },
           ],
+          {cancelable: false},
         )
       })
       .catch(err => console.warn(err))

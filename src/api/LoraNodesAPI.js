@@ -1,4 +1,4 @@
-const baseURL = 'http://localhost:8080/api'; // TODO : changer cela quand le backend sera en prod
+const baseURL = 'http://10.192.106.31:8080/api'; // TODO : changer cela quand le backend sera en prod
 
 const fetchAllLoraNodes = async () => {
 
