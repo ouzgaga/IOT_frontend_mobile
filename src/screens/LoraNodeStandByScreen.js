@@ -4,6 +4,7 @@ import MenuButton from '../components/MenuButton';
 import SubmitButton from '../components/SubmitButton';
 import NfcManager, { Ndef } from 'react-native-nfc-manager';
 import UserInput from '../components/UserInputNewNode'
+import Wallpaper from '../components/Wallpaper';
 
 function buildTextPayload(valueToWrite) {
   return Ndef.encodeMessage([
@@ -131,26 +132,11 @@ export default class LoraNodeStandByScreen extends React.Component {
 
   _onTagDiscovered = tag => {
 
-    this.setState({ tag });
-
     let text = this._parseText(tag);
-
     this.setState({ UIDDetected: text });
 
-    /*
-    fetch('https://mywebsite.com/endpoint/', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        firstParam: 'yourValue',
-        secondParam: 'yourOtherValue',
-      }),
-    }).then(response => response.json())
-    .then(responseJson => console.log(responseJson)); */
-    const isActive = true;
+    // TODO : fetch au backend pour savoir si le noeud Lora est en stand-by ou non
+    const isActive = true; // noeud en stand-by ou non
     this.setState({
       isActive
     })
@@ -210,24 +196,25 @@ export default class LoraNodeStandByScreen extends React.Component {
   }
 
   render() {
-    const { tag, parsedText, isActive, UIDDetected } = this.state;
+    const { isActive, UIDDetected } = this.state;
 
-    console.log(UIDDetected)
     return (
-      <View style={styles.container}>
+      <Wallpaper>
+        <View style={styles.container}>
 
-        {UIDDetected ? (
-          <Text>{`Scan the Lora Node to ${isActive ? 'desactive' : 'active'} it`}</Text>
-        ) : (
-            <Text>Scan the Lora Node</Text>
-          )
-        }
-      </View>
+          {UIDDetected ? (
+            <Text style={styles.infoText}>{`Scan the Lora Node to ${isActive ? 'desactive' : 'active'} it`}</Text>
+          ) : (
+              <Text style={styles.infoText}>Scan the Lora Node</Text>
+            )
+          }
+        </View>
+      </Wallpaper>
     );
   }
 
   _requestNdefWrite = (text) => {
-    let { isWriting } = this.state;
+    let { isWriting, isActive } = this.state;
     if (isWriting) {
       return;
     }
@@ -240,7 +227,7 @@ export default class LoraNodeStandByScreen extends React.Component {
         this._cancelNdefWrite();
         Alert.alert(
           'Device changed',
-          'Congrats, the node has been changed',
+          `Congrats, the node has been ${isActive ? 'desactived' : 'actived'}`,
           [
             {
               text: 'OK', onPress: () => {
@@ -266,7 +253,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF',
   },
   loraNodeDetails: {
     flex: 1,
@@ -281,8 +267,18 @@ const styles = StyleSheet.create({
     borderWidth: 1
   },
   titleDetails: {
+    color: 'white',
     fontSize: 18,
+    fontWeight: 'bold',
+    backgroundColor: 'transparent',
     marginTop: 30,
     marginBottom: 30,
-  }
+  },
+  infoText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    backgroundColor: 'transparent',
+    marginTop: 20,
+  },
 });

@@ -7,6 +7,8 @@ const fetchAllVideoNodes = async (token) => {
 
   const response = await fetch(url, {
     headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`
     },
     method: 'GET',
@@ -48,6 +50,8 @@ const runVideoNode = async (token, deviceIp) => {
 
   const response = await fetch(url, {
     headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`
     },
     method: 'GET',

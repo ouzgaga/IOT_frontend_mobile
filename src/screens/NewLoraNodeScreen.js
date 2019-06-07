@@ -2,8 +2,13 @@ import React from 'react';
 import { View, Text, StyleSheet, TextInput, Platform, Alert } from 'react-native';
 import MenuButton from '../components/MenuButton';
 import SubmitButton from '../components/SubmitButton';
+import Wallpaper from '../components/Wallpaper';
+
 import NfcManager, { Ndef } from 'react-native-nfc-manager';
 import UserInput from '../components/UserInputNewNode'
+import LoraNodesAPI from '../api/LoraNodesAPI'
+import storageManager from '../utils/StorageManager';
+import Util from '../utils/Util';
 
 function buildTextPayload(valueToWrite) {
   return Ndef.encodeMessage([
@@ -25,11 +30,12 @@ export default class SettingsScreen extends React.Component {
       tag: {},
       parsedText: null,
       loading: false,
-      loraNodeName: '',
-      loraNameDescription: '',
+      videoNodeName: '',
+      videoNameDescription: '',
       detectionNFC: false,
       isWriting: false,
-      UIDDetected: null,
+      NFCReadText: false,
+      nodeUID: null,
     };
 
     props.navigation.addListener(
@@ -51,6 +57,16 @@ export default class SettingsScreen extends React.Component {
       }
     );
   }
+
+  componentDidMount() {
+    this.getToken();
+  }
+
+  getToken = async () => {
+    const userToken = await storageManager.getToken();
+    this.setState({ token: userToken })
+  }
+
 
   componentWillUnmount() {
     if (this._stateChangedSubscription) {
@@ -128,26 +144,13 @@ export default class SettingsScreen extends React.Component {
 
   _onTagDiscovered = tag => {
 
-    this.setState({ tag });
-
     let text = this._parseText(tag);
 
-    this.setState({ UIDDetected: text });
+    // TODO : voir format des données lues par NFC
 
-    /*
-    fetch('https://mywebsite.com/endpoint/', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        firstParam: 'yourValue',
-        secondParam: 'yourOtherValue',
-      }),
-    }).then(response => response.json())
-    .then(responseJson => console.log(responseJson)); */
-
+      this.setState({ nodeUID: text })
+      this.setState({ NFCReadText: text });
+    
   }
 
   _stopDetection = () => {
@@ -171,26 +174,32 @@ export default class SettingsScreen extends React.Component {
     return null;
   }
 
-  fetchNameExisting = () => {
-    const { loraNodeName, loraNameDescription } = this.state;
+  fetchNameExisting = async () => {
+    const { videoNodeName, videoNameDescription, token, nodeUID, nodepublicKey } = this.state;
 
-    if (loraNodeName === '' || loraNameDescription === '') {
+    if (videoNodeName === '' || videoNameDescription === '') {
       Alert.alert(
         'Text Fields empty',
         'The name and the description must not be empty',
         [
           { text: 'OK', onPress: () => console.log('OK Pressed') },
         ],
-
       );
     } else {
       this.setState({
         detectionNFC: true
       });
-
     }
-    this._requestNdefWrite(this.state.loraNodeName)
 
+    console.log(videoNodeName, videoNameDescription, nodeUID)
+    const response = await LoraNodesAPI.addLoraNode(videoNodeName, videoNameDescription, nodeUID)
+
+    console.log('response 2', response)
+
+    // TODO : voir la structure des données, ici données séparée par un ';'
+    const infosToWrite = `${nodeUID}`;
+
+    this._requestNdefWrite(infosToWrite)
   }
 
   _parseText = (tag) => {
@@ -205,47 +214,47 @@ export default class SettingsScreen extends React.Component {
   }
 
   render() {
-    const { tag, parsedText, detectionNFC, UIDDetected } = this.state;
-
-    console.log(UIDDetected)
+    const { detectionNFC, NFCReadText } = this.state;
     return (
-      <View style={styles.container}>
+      <Wallpaper>
 
-        {UIDDetected ? (
-          detectionNFC ? (
-            <View style={styles.container}>
-              <Text>Scan the Node to write inside</Text>
-            </View>
-          ) : (
-              <View style={styles.loraNodeDetails}>
+        <View style={styles.container}>
 
-                <Text>{`UID : ${UIDDetected}`}</Text>
-
-                <Text style={styles.titleDetails}>Enter Lora Node name and description</Text>
-                <UserInput
-                  placeholder="Name"
-                  autoCapitalize={'none'}
-                  returnKeyType={'next'}
-                  autoCorrect={false}
-                  onChange={(v) => { this.setState({ loraNodeName: v }); }}
-                />
-
-                <UserInput
-                  placeholder="Description"
-                  autoCapitalize={'none'}
-                  returnKeyType={'next'}
-                  autoCorrect={false}
-                  onChange={(v) => { this.setState({ loraNameDescription: v }); }}
-                />
-
-                <SubmitButton title="Submit" isLoading={this.state.loading} onPress={this.fetchNameExisting} />
+          {NFCReadText ? (
+            detectionNFC ? (
+              <View style={styles.container}>
+                <Text style={styles.infoText}>Scan the Node to write inside</Text>
               </View>
+            ) : (
+                <View style={styles.videoNodeDetails}>
+
+                  <Text style={styles.titleDetails}>Enter video Node name and description</Text>
+                  <UserInput
+                    placeholder="Name"
+                    autoCapitalize={'none'}
+                    returnKeyType={'next'}
+                    autoCorrect={false}
+                    onChange={(v) => { this.setState({ videoNodeName: v }); }}
+                  />
+
+                  <UserInput
+                    placeholder="Description"
+                    autoCapitalize={'none'}
+                    returnKeyType={'next'}
+                    autoCorrect={false}
+                    onChange={(v) => { this.setState({ videoNameDescription: v }); }}
+                  />
+
+                  <SubmitButton title="Submit" isLoading={this.state.loading} onPress={this.fetchNameExisting} />
+                </View>
+              )
+          ) : (
+              <Text style={styles.infoText}>Scan the Lora Node to register it</Text>
             )
-        ) : (
-            <Text>Scan the Lora Node to register it</Text>
-          )
-        }
-      </View>
+          }
+        </View>
+      </Wallpaper>
+
     );
   }
 
@@ -261,6 +270,7 @@ export default class SettingsScreen extends React.Component {
     NfcManager.requestNdefWrite(bytes)
       .then(() => {
         this._cancelNdefWrite();
+        
         Alert.alert(
           'New device',
           'Congrats, the node has been registred',
@@ -269,10 +279,11 @@ export default class SettingsScreen extends React.Component {
               text: 'OK', onPress: () => {
 
                 this.setState({
-                  loraNodeName: '',
-                  loraNameDescription: '',
+                  vidoeNodeName: '',
+                  videoNameDescription: '',
                   detectionNFC: false,
-                  UIDDetected: null,
+                  NFCReadText: null,
+                  nodeUID: null,
                 })
               }
             },
@@ -292,9 +303,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF',
   },
-  loraNodeDetails: {
+  videoNodeDetails: {
     flex: 1,
     marginTop: 20,
     justifyContent: 'center',
@@ -307,8 +317,18 @@ const styles = StyleSheet.create({
     borderWidth: 1
   },
   titleDetails: {
+    color: 'white',
     fontSize: 18,
-    marginTop: 30,
-    marginBottom: 30,
-  }
+    fontWeight: 'bold',
+    backgroundColor: 'transparent',
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  infoText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    backgroundColor: 'transparent',
+    marginTop: 20,
+  },
 });
