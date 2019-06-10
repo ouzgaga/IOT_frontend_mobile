@@ -166,7 +166,7 @@ export default class SettingsScreen extends React.Component {
       .then(() => {
         this.cancelNdefWrite();
 
-        // TODO : permet de lancer le peering entre le back-en et le noeud Video
+        // TODO : permet de lancer le peering entre le back-end et le noeud Video
         // Décommenter la ligne ci-dessus quand le noeud Video sera prêt à faire le peering
         // VideoNodesAPI.runVideoNode(token, nodeIP);
         Alert.alert(
