@@ -36,11 +36,7 @@ const addLoraNode = async (deviceID, description, deviceEUI) => {
       body
     });
 
-    console.log(response);
-
     const responseJson = await response.json();
-
-    console.log('new lora', responseJson);
     return responseJson;
   } catch (err) {
     console.log('erreur');

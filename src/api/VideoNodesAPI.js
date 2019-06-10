@@ -39,7 +39,6 @@ const addVideoNode = async (token, name, description, ip, publicKey) => {
   });
 
   const responseJson = await response.json();
-  console.log(responseJson)
 
   return responseJson;
 };

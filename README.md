@@ -16,7 +16,24 @@ npm install
 react-native run-android
 ```
 
-*Note : Le projet a été testé*
+*Note : Le projet a été testé avec Android, il n'a malheureusement pas pu être expérimenté sur iOS et il n'est pas certain qu'il soit opérationnel sur cette plateforme à cause des spécificités de la librairie react-native-nfc-manager.*
+
+## **Application**
+
+L'application comporte différents menus
+
+##### Accueil
+
+Cette fenêtre indique si l'utilisateur possède un smartphone qui est compatible avec NFC.
+
+Pour Android :
+
+- La fenêtres indique si NFC est activé sur le smartphone
+- La fenêtre propose un lien pour accéder aux réglages d'NFC sur le smartphone, ce qui permetterait d'activer NFC si cela n'est pas le cas.
+
+**Noeuds Lora**
+
+Cette fenêtre affiche les noeuds Lora engeristés sur le back-end TTN.
 
 
 
