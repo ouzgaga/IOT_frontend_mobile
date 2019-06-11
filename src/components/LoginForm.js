@@ -2,18 +2,16 @@ import React, { Component } from 'react';
 import {
   StyleSheet, Text, View
 } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 import Layout from '../constants/Layout';
-
 import UserInput from './UserInput';
 import SubmitButton from './SubmitButton';
-
 import emailImg from '../assets/images/email.png';
 import passwordImg from '../assets/images/password.png';
-import serverImg from '../assets/images/server.png';
-import storageManager from '../utils/StorageManager';
+import VideoNodesAPI from '../api/VideoNodesAPI';
+import Loader from './Loader';
 
 const defaultValue = {
-  server: 'https://heig-iot-backend.herokuapp.com',
   email: 'admin@iot.com',
   password: 'mySuperPassword',
 };
@@ -22,7 +20,6 @@ export default class LoginForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      serverAddr: defaultValue.server,
       email: defaultValue.email,
       password: defaultValue.password,
       error: '',
@@ -31,38 +28,24 @@ export default class LoginForm extends Component {
   }
 
   auth = async () => {
-    if (this.state.serverAddr === '' || this.state.email === '' || this.state.password === '') {
+    const { email, password } = this.state;
+    const { navigation } = this.props;
+    if (email === '' || password === '') {
       this.setState({ error: 'At least one field is empty.' });
-    }
-    else {
+    } else {
       this.setState({ isLoading: true });
-      try {
-        console.log(`${this.state.serverAddr}/accounts/authentication`);
-        const response = await fetch(`${this.state.serverAddr}/accounts/authentication`, {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: this.state.email,
-            password: this.state.password,
-          }),
-        });
-        const responseJSON = await response.json();
+      const response = await VideoNodesAPI.login(email, password);
 
-        if (response.status === 201) {
-          this.setState({ error: 'SUCCESS' });
-          storageManager.setToken(responseJSON.token);
-          this.props.navigation.navigate('App');
-        }
-        else if (responseJSON.status !== undefined && responseJSON.status !== '')
-          this.setState({ error: responseJSON.error });
-        else
-          this.setState({ error: 'An error occured. Maybe check the server URL ?' });
-      } catch (error) {
-        this.setState({ error: 'An error occured. Maybe check the server URL ?' });
-        console.log(error);
+      this.setState({ isLoading: false });
+
+      if (response.token) {
+        this.setState({ error: 'SUCCESS' });
+        AsyncStorage.setItem('token', response.token);
+        AsyncStorage.setItem('email', email);
+        AsyncStorage.setItem('password', password);
+        navigation.navigate('App');
+      } else {
+        this.setState({ error: 'Maybe bad credentials' });
       }
     }
   }
@@ -71,6 +54,9 @@ export default class LoginForm extends Component {
     const { isLoading, error } = this.state;
     return (
       <View behavior="padding" style={styles.container}>
+
+        <Loader visible={isLoading} />
+
         {
           (error.length > 0) && (
             <View style={styles.errorView}>
@@ -82,15 +68,7 @@ export default class LoginForm extends Component {
             </View>
           )
         }
-        <UserInput
-          source={serverImg}
-          placeholder="Server https://"
-          autoCapitalize="none"
-          returnKeyType="next"
-          autoCorrect={false}
-          defaultValue={defaultValue.server}
-          onChange={(v) => { this.setState({ serverAddr: v }); }}
-        />
+
         <UserInput
           source={emailImg}
           placeholder="Email"
@@ -110,7 +88,7 @@ export default class LoginForm extends Component {
           defaultValue={defaultValue.email}
           onChange={(v) => { this.setState({ password: v }); }}
         />
-        <SubmitButton title="Login" onPress={() => this.auth()} isLoading={isLoading} />
+        <SubmitButton title="Login" onPress={() => this.auth()} />
       </View>
     );
   }

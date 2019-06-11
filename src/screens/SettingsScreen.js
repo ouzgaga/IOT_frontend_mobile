@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 import MenuButton from '../components/MenuButton';
-import storageManager from '../utils/StorageManager';
 import SubmitButton from '../components/SubmitButton';
 import Wallpaper from '../components/Wallpaper';
 
@@ -10,7 +10,7 @@ export default class SettingsScreen extends React.Component {
 
   resetToken() {
     const { navigation } = this.props;
-    storageManager.clearValue(storageManager.TOKEN_KEY);
+    AsyncStorage.clear();
     navigation.navigate('Auth');
   }
 

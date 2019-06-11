@@ -1,32 +1,48 @@
 import React from 'react';
 import {
-  ActivityIndicator,
   StatusBar,
   View,
 } from 'react-native';
-import storageManager from '../utils/StorageManager';
+import AsyncStorage from '@react-native-community/async-storage';
+import Loader from '../components/Loader';
+import VideoNodesAPI from '../api/VideoNodesAPI';
 
 export default class AuthLoadingScreen extends React.Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      isLoading: false
+    };
+
     this.bootstrapAsync();
   }
 
   // Fetch the token from storage then navigate to our appropriate place
   bootstrapAsync = async () => {
     const { navigation } = this.props;
-    const userToken = await storageManager.getToken();
+    const email = await AsyncStorage.getItem('email');
+    const password = await AsyncStorage.getItem('password');
 
-    // This will switch to the App screen or Auth screen and this loading
-    // screen will be unmounted and thrown away.
-    navigation.navigate(userToken ? 'App' : 'Auth');
+    this.setState({ isLoading: true });
+    const response = await VideoNodesAPI.login(email, password);
+
+    this.setState({ isLoading: false });
+
+    if (response.token) {
+      AsyncStorage.setItem('token', response.token);
+      navigation.navigate('App');
+    } else {
+      navigation.navigate('Auth');
+    }
   };
 
   // Render any loading content that you like here
   render() {
+    const { isLoading } = this.state;
     return (
       <View>
-        <ActivityIndicator />
+        <Loader visible={isLoading} />
         <StatusBar barStyle="default" />
       </View>
     );

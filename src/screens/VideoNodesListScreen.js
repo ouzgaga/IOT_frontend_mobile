@@ -1,8 +1,8 @@
 import React from 'react';
 import { FlatList } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 import MenuButton from '../components/MenuButton';
 import VideoNodesAPI from '../api/VideoNodesAPI';
-import storageManager from '../utils/StorageManager';
 import Wallpaper from '../components/Wallpaper';
 import NodeItem from '../components/NodeItem';
 import Loader from '../components/Loader';
@@ -24,7 +24,7 @@ export default class VideoNodesListScreen extends React.Component {
   }
 
   fetchDatas = async () => {
-    const userToken = await storageManager.getToken();
+    const userToken = await AsyncStorage.getItem('token');
     this.setState({ loading: true });
     const nodes = await VideoNodesAPI.fetchAllVideoNodes(userToken);
     if (nodes) {

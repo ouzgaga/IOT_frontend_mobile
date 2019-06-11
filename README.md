@@ -58,7 +58,14 @@ L'application comporte différents menus :
 
 ##### Login
 
-Simple menu pour se logger
+Simple menu pour se logger. Se connecte au backend Vidéo uniquement, le backend TTN n'ayant pas de système de login.
+
+Identifiants pour le backend Vidéo :
+
+-  email: admin@iot.com
+-  mot de passe: mySuperPassword
+
+
 
 <img src="assets\login.jpg" style="height:400px" />
 
@@ -160,9 +167,13 @@ Cette page permet simplement de se déconnecter du compte
 
 <img src="assets\settings.jpg" style="height:400px" />
 
+##### Fermeture et réouverture de l'application
+
+Lorsque l'utilisateur se connecte, l'application sauvergarde de manière persitante l'email ainsi, le mot de passe ainsi que le token renvoyé par le backend vidéo grâce à la librairie *@react-native-community/async-storage*. Le token ayant une durée de validité sur le backend Vidéo, lorsque l'utilisateur réouvre son application, on redemande le token au backend en utilisant l'email et le mot de passe précédent. Si le backend Vidéo nous renvoie un nouveau token, alors on le stocke et on va à la page d'accueil. Si le backend vidéo ne nous renvoie pas un nouveau token, alors on redirige l'utilisateur à la page de login afin qu'il rentre son email et son mot de passe.
+
 ## Librairies utilisées
 
-*@react-native-community/async-storage* : Stockage clé-valeur asynchrone et persitant. Permet de stocker le token de l'utilisateur et donc de ne pas devoir se reconnecter à chque fois que l'on relance l'application.
+*@react-native-community/async-storage* : Stockage clé-valeur asynchrone et persitant. Permet de stocker l'email et le mot de passe de l'utilisateur et donc de ne pas devoir passer par la page de login à chque fois que l'on relance l'application.
 
 *react-moment* : moment.js adapté à react. Permet d'afficher proprement depuis combien de temps les noeuds Video et Lora on été crée ("créé il y a ..."). Plus utilisé dans l'état actuel de l'application.
 

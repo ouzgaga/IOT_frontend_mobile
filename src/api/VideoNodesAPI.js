@@ -61,4 +61,24 @@ const runVideoNode = async (token, deviceIp) => {
   return responseJson;
 };
 
-export default { fetchAllVideoNodes, addVideoNode, runVideoNode };
+const login = async (email, password) => {
+  const response = await fetch(`${baseURL}/accounts/authentication`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email,
+      password,
+    }),
+  });
+
+  const responseJson = await response.json();
+
+  return responseJson;
+};
+
+export default {
+  fetchAllVideoNodes, addVideoNode, runVideoNode, login
+};

@@ -3,6 +3,7 @@ import {
   View, Text, StyleSheet, Platform, Alert
 } from 'react-native';
 import NfcManager, { Ndef } from 'react-native-nfc-manager';
+import AsyncStorage from '@react-native-community/async-storage';
 
 import MenuButton from '../components/MenuButton';
 import SubmitButton from '../components/SubmitButton';
@@ -10,7 +11,6 @@ import Wallpaper from '../components/Wallpaper';
 
 import UserInput from '../components/UserInputNewNode';
 import VideoNodesAPI from '../api/VideoNodesAPI';
-import storageManager from '../utils/StorageManager';
 import Loader from '../components/Loader';
 
 function buildTextPayload(valueToWrite) {
@@ -60,7 +60,7 @@ export default class SettingsScreen extends React.Component {
   }
 
   getToken = async () => {
-    const userToken = await storageManager.getToken();
+    const userToken = await AsyncStorage.getItem('token');
     this.setState({ token: userToken });
   }
 
