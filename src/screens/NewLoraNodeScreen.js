@@ -212,6 +212,8 @@ export default class SettingsScreen extends React.Component {
         .catch((err) => {
           console.log(err);
         });
+    } else {
+      this.startDetection();
     }
   }
 
