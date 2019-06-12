@@ -161,6 +161,22 @@ Une fois le tag NFC lu, le texte lu est affiché
 
 <img src="assets\NFCReader2.jpg" style="height:400px" />
 
+##### Rédacteur NFC
+
+Cette page permet simplement d'écrire les informations voulues dans un tag NFC. Cette page était surtout utile à fin de tests pour écrire les données qui étaient sensées se trouver dans les différents noeuds (UID pour les noeuds Lora et adresse IP + clé publique séparés par un point-virgule pour les noeuds vidéo). Elle serait probablement à enlever dans la version finale de l'application.
+
+L'application demande tout d'abord à l'utilisateur le texte qu'il veut écrire.
+
+<img src="assets\NFCWriter.jpg" style="height:400px" />
+
+L'application demande ensuite de scanner le noeud afin d'écrire à l'intérieur
+
+<img src="assets\NFCWriter2.jpg" style="height:400px" />
+
+Un feed-back indique à l'utilisteur que l'écriture s'est bien passée
+
+<img src="assets\NFCWriter3.jpg" style="height:400px" />
+
 ##### Réglages
 
 Cette page permet simplement de se déconnecter du compte

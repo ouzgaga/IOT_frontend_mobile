@@ -67,19 +67,6 @@ export default class HomeScreen extends React.Component {
         .catch((err) => {
           console.log(err);
         });
-      NfcManager.onStateChanged(
-        (event) => {
-          if (event.state === 'on') {
-            this.setState({ enabled: true });
-          } else if (event.state === 'off') {
-            this.setState({ enabled: false });
-          } else if (event.state === 'turning_on') {
-            // do whatever you want
-          } else if (event.state === 'turning_off') {
-            // do whatever you want
-          }
-        }
-      );
     }
   }
 

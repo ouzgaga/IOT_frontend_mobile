@@ -1,14 +1,17 @@
-import { createStackNavigator, createAppContainer, createDrawerNavigator, createSwitchNavigator } from "react-navigation";
+import {
+  createStackNavigator, createAppContainer, createDrawerNavigator, createSwitchNavigator
+} from 'react-navigation';
 import HomeScreen from './src/screens/HomeScreen';
-import LoraNodesListScreen from './src/screens/LoraNodesListScreen'
-import VideoNodesListScreen from './src/screens/VideoNodesListScreen'
+import LoraNodesListScreen from './src/screens/LoraNodesListScreen';
+import VideoNodesListScreen from './src/screens/VideoNodesListScreen';
 import NFCReaderScreen from './src/screens/NFCReaderScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
-import SignInScreen from './src/screens/SignInScreen'
-import AuthLoadingScreen from './src/screens/AuthLoadingScreen'
-import NewLoraNodeScreen from './src/screens/NewLoraNodeScreen'
-import LoraNodeStandByScreen from './src/screens/LoraNodeStandByScreen'
-import NewVideoNode from './src/screens/NewVideoNodeScreen'
+import SignInScreen from './src/screens/SignInScreen';
+import AuthLoadingScreen from './src/screens/AuthLoadingScreen';
+import NewLoraNodeScreen from './src/screens/NewLoraNodeScreen';
+import LoraNodeStandByScreen from './src/screens/LoraNodeStandByScreen';
+import NewVideoNode from './src/screens/NewVideoNodeScreen';
+import NFCWriterScreen from './src/screens/NFCWriterScreen';
 
 const AuthStack = createStackNavigator({ SignIn: SignInScreen });
 
@@ -68,6 +71,14 @@ NFCReaderStack.navigationOptions = {
   title: 'NFC Reader',
 };
 
+const NFCWriterStack = createStackNavigator({
+  NFCWriter: NFCWriterScreen,
+});
+
+NFCWriterStack.navigationOptions = {
+  title: 'NFC Writer',
+};
+
 const SettingsStack = createStackNavigator({
   Settings: SettingsScreen,
 });
@@ -84,6 +95,7 @@ const AppNavigator = createDrawerNavigator({
   LoraNodeStandByStack,
   NewVideoNodeStack,
   NFCReaderStack,
+  NFCWriterStack,
   SettingsStack,
 });
 

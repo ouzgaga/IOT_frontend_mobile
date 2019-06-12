@@ -1,10 +1,12 @@
 import React from 'react';
 import {
-  View, Text, StyleSheet, Platform, Alert
+  View, Text, StyleSheet, Alert, Platform
 } from 'react-native';
 import NfcManager, { Ndef } from 'react-native-nfc-manager';
 import MenuButton from '../components/MenuButton';
+import SubmitButton from '../components/SubmitButton';
 import Wallpaper from '../components/Wallpaper';
+import UserInput from '../components/UserInputNewNode';
 
 function buildTextPayload(valueToWrite) {
   return Ndef.encodeMessage([
@@ -12,20 +14,25 @@ function buildTextPayload(valueToWrite) {
   ]);
 }
 
-export default class LoraNodeStandByScreen extends React.Component {
-  static navigationOptions = ({ navigation }) => ({ headerTitle: <MenuButton navigation={navigation} title="Lora Node stand-by" /> });
+export default class SettingsScreen extends React.Component {
+  static navigationOptions = ({ navigation }) => ({ headerTitle: <MenuButton navigation={navigation} title="NFC Writer" /> });
 
   constructor(props) {
     super(props);
     this.state = {
+      writeMenu: false,
+      textToWrite: '',
       isWriting: false,
-      UIDDetected: null,
     };
 
     props.navigation.addListener(
       'didBlur',
       () => {
+        const { writeMenu } = this.state;
         this.stopDetection();
+        if (writeMenu) {
+          this.cancelNdefWrite();
+        }
       }
     );
     props.navigation.addListener(
@@ -51,40 +58,6 @@ export default class LoraNodeStandByScreen extends React.Component {
       });
   }
 
-  onTagDiscovered = (tag) => {
-    const text = this.parseText(tag);
-    this.setState({ UIDDetected: text });
-
-    // TODO : fetch au backend pour savoir si le noeud Lora est en stand-by ou non
-    const isActive = true; // noeud en stand-by ou non
-    this.setState({
-      isActive
-    });
-    if (isActive) {
-      Alert.alert(
-        `Node ${isActive ? 'active' : 'inactive'}`,
-        `The node is ${isActive ? 'active' : 'inactive'}, do you you to ${isActive ? 'desactive' : 'active'} it`,
-        [
-          {
-            text: 'NO',
-            onPress: () => {
-              this.setState({
-                UIDDetected: null,
-              });
-            }
-          },
-          {
-            text: 'YES',
-            onPress: () => {
-              this.requestNdefWrite(isActive ? 'desactive' : 'active');
-            }
-          },
-        ],
-        { cancelable: false },
-      );
-    }
-  }
-
   stopDetection = () => {
     NfcManager.unregisterTagEvent()
       .then((result) => {
@@ -95,30 +68,28 @@ export default class LoraNodeStandByScreen extends React.Component {
       });
   }
 
-  parseText = (tag) => {
-    try {
-      if (Ndef.isType(tag.ndefMessage[0], Ndef.TNF_WELL_KNOWN, Ndef.RTD_TEXT)) {
-        return Ndef.text.decodePayload(tag.ndefMessage[0].payload);
-      }
-    } catch (e) {
-      console.log(e);
-    }
-    return null;
-  }
 
-  parseText = (tag) => {
-    try {
-      if (Ndef.isType(tag.ndefMessage[0], Ndef.TNF_WELL_KNOWN, Ndef.RTD_TEXT)) {
-        return Ndef.text.decodePayload(tag.ndefMessage[0].payload);
-      }
-    } catch (e) {
-      console.log(e);
+  writeText = async () => {
+    const { textToWrite } = this.state;
+
+    if (textToWrite === '') {
+      Alert.alert(
+        'Text Field empty',
+        'The text to write must not be empty',
+        [
+          { text: 'OK', onPress: () => console.log('OK Pressed') },
+        ],
+        { cancelable: false },
+      );
+    } else {
+      this.setState({ writeMenu: true });
+
+      this.requestNdefWrite(textToWrite);
     }
-    return null;
   }
 
   requestNdefWrite = (text) => {
-    const { isWriting, isActive } = this.state;
+    const { isWriting } = this.state;
     if (isWriting) {
       return;
     }
@@ -126,18 +97,19 @@ export default class LoraNodeStandByScreen extends React.Component {
     const bytes = buildTextPayload(text);
 
     this.setState({ isWriting: true });
+
     NfcManager.requestNdefWrite(bytes)
       .then(() => {
-        this.cancelNdefWrite();
         Alert.alert(
-          'Device changed',
-          `Congrats, the node has been ${isActive ? 'desactived' : 'actived'}`,
+          'Success',
+          'Congrats, writing was a success',
           [
             {
               text: 'OK',
               onPress: () => {
                 this.setState({
-                  UIDDetected: null,
+                  writeMenu: false,
+                  textToWrite: '',
                 });
               }
             },
@@ -145,11 +117,15 @@ export default class LoraNodeStandByScreen extends React.Component {
           { cancelable: false },
         );
       })
-      .catch(err => console.warn(err));
+      .catch(err => console.warn(err))
+      .then(() => this.setState({ isWriting: false }));
   }
 
   cancelNdefWrite = () => {
     this.setState({ isWriting: false });
+    NfcManager.cancelNdefWrite()
+      .then(() => console.log('write cancelled'))
+      .catch(err => console.warn(err));
   }
 
   startNfc() {
@@ -166,6 +142,13 @@ export default class LoraNodeStandByScreen extends React.Component {
       });
 
     if (Platform.OS === 'android') {
+      NfcManager.getLaunchTagEvent()
+        .then((tag) => {
+          console.log('launch tag', tag);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
       NfcManager.isEnabled()
         .then(() => {
           this.startDetection();
@@ -173,29 +156,43 @@ export default class LoraNodeStandByScreen extends React.Component {
         .catch((err) => {
           console.log(err);
         });
+    } else {
+      this.startDetection();
     }
   }
 
-
   render() {
-    const { isActive, UIDDetected } = this.state;
-
+    const { writeMenu } = this.state;
     return (
       <Wallpaper>
+
         <View style={styles.container}>
 
-          {UIDDetected ? (
-            <Text style={styles.infoText}>{`Scan the Lora Node to ${isActive ? 'desactive' : 'active'} it`}</Text>
+          {writeMenu ? (
+            <View style={styles.container}>
+              <Text style={styles.infoText}>Scan the Node to write inside</Text>
+            </View>
           )
             : (
-              <Text style={styles.infoText}>Scan the Lora Node</Text>
-            )
-          }
+              <View style={styles.loraNodeDetails}>
+
+                <Text style={styles.titleDetails}>Enter the text you want to write</Text>
+                <UserInput
+                  placeholder="Text"
+                  autoCapitalize="none"
+                  returnKeyType="next"
+                  autoCorrect={false}
+                  onChange={(v) => { this.setState({ textToWrite: v }); }}
+                />
+                <SubmitButton title="Submit" onPress={this.writeText} />
+              </View>
+            )}
         </View>
       </Wallpaper>
     );
   }
 }
+
 
 const styles = StyleSheet.create({
   container: {
@@ -220,8 +217,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     backgroundColor: 'transparent',
-    marginTop: 30,
-    marginBottom: 30,
+    marginTop: 20,
+    marginBottom: 20,
   },
   infoText: {
     color: 'white',

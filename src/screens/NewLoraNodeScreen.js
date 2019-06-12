@@ -91,7 +91,7 @@ export default class SettingsScreen extends React.Component {
     return null;
   }
 
-  fetchNameExisting = async () => {
+  sendToBackEnd = async () => {
     const { loraNodeName, loraNameDescription, nodeUID } = this.state;
 
     if (loraNodeName === '' || loraNameDescription === '') {
@@ -118,9 +118,17 @@ export default class SettingsScreen extends React.Component {
         const infosToWrite = `${APPKEY};${APPEUI};${nodeUID}`;
 
         this.requestNdefWrite(infosToWrite);
+      } else {
+        Alert.alert(
+          'Error',
+          'The server seems not happy',
+          [
+            { text: 'OK', onPress: () => console.log('OK Pressed') },
+          ],
+          { cancelable: false },
+        );
       }
       this.setState({ loading: false });
-
     }
   }
 
@@ -242,7 +250,7 @@ export default class SettingsScreen extends React.Component {
                     onChange={(v) => { this.setState({ loraNameDescription: v }); }}
                   />
 
-                  <SubmitButton title="Submit" isLoading={loading} onPress={this.fetchNameExisting} />
+                  <SubmitButton title="Submit" isLoading={loading} onPress={this.sendToBackEnd} />
                 </View>
               )
           )
